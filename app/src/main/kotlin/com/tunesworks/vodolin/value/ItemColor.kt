@@ -1,4 +1,4 @@
-package com.tunesworks.vodolin
+package com.tunesworks.vodolin.value
 
 import android.graphics.Color
 

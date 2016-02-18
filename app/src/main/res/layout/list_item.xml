@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <FrameLayout
+        android:id="@+id/item_label"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerInParent="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="16dp">
+        <View
+            android:id="@+id/item_color"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorAccent"/>
+        <TextView
+            android:id="@+id/item_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="24dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            fontPath="fonts/ionicons.ttf"
+            tools:ignore="MissingPrefix"
+            android:textColor="#FFFFFF" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="72dp"
+        android:layout_marginRight="72dp"/>
+
+    <TextView
+        android:id="@+id/item_action"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="16dp"
+        android:textSize="24dp"
+        fontPath="fonts/ionicons.ttf"
+        tools:ignore="MissingPrefix"
+        android:text="">
+
+    </TextView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDD"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>

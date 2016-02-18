@@ -17,11 +17,15 @@ import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import com.tunesworks.vodolin.fragment.ListFragment
 import com.tunesworks.vodolin.model.ToDo
+import com.tunesworks.vodolin.value.ItemColor
 import io.realm.Realm
+import kotlinx.android.synthetic.main.activity_main.*
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper
 import java.util.*
 
@@ -31,10 +35,10 @@ class MainActivity : AppCompatActivity() {
     val dataList = ArrayList<String>()
 
     val pagerAdapter by lazy { PagerAdapter(supportFragmentManager) }
-    val toolbar      by lazy { findViewById(R.id.toolbar) as Toolbar }
-    val fab          by lazy { findViewById(R.id.fab) as FloatingActionButton }
-    val tabs         by lazy { findViewById(R.id.tabs) as TabLayout }
-    val viewPager    by lazy { findViewById(R.id.view_pager) as ViewPager }
+    //val toolbar      by lazy { findViewById(R.id.toolbar) as Toolbar }
+    //val fab          by lazy { findViewById(R.id.fab) as FloatingActionButton }
+    //val tabs         by lazy { findViewById(R.id.tabs) as TabLayout }
+    //val viewPager    by lazy { findViewById(R.id.view_pager) as ViewPager }
 
     override fun attachBaseContext(newBase: Context?) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase))
@@ -61,11 +65,11 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, REQUEST_CODE)
         }
 
-        viewPager.adapter = pagerAdapter
-        tabs.setupWithViewPager(viewPager)
+        view_pager.adapter = pagerAdapter
+        tabs.setupWithViewPager(view_pager)
 
         tabs.apply {
-            var prevColor = Color.RED
+            var prevColor = ItemColor.DEFAULT.color
             setOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabReselected(tab: TabLayout.Tab?) {}
                 override fun onTabUnselected(tab: TabLayout.Tab?) {}
@@ -76,7 +80,14 @@ class MainActivity : AppCompatActivity() {
                     val color = ItemColor.values()[tab.position].color
 
                     ValueAnimator.ofObject(ArgbEvaluator(), prevColor, color).apply {
-                        addUpdateListener { toolbar.setBackgroundColor(it.animatedValue as Int) }
+                        addUpdateListener { appbar.setBackgroundColor(it.animatedValue as Int) }
+                        duration = 500
+                        interpolator = DecelerateInterpolator()
+                        start()
+                    }
+
+                    ValueAnimator.ofObject(ArgbEvaluator(), prevColor, color).apply {
+                        addUpdateListener { window.statusBarColor = it.animatedValue as Int }
                         duration = 500
                         interpolator = DecelerateInterpolator()
                         start()
@@ -85,9 +96,12 @@ class MainActivity : AppCompatActivity() {
                     tabs.setSelectedTabIndicatorColor(color)
                     prevColor = color
 
-                    viewPager.currentItem = tab.position
+                    view_pager.currentItem = tab.position
                 }
             })
+
+            // Init appbar color
+            getTabAt(selectedTabPosition)?.select()
         }
     }
 

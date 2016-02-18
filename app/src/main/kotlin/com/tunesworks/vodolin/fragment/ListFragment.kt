@@ -9,13 +9,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.tunesworks.vodolin.ItemColor
+import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
 import com.tunesworks.vodolin.model.ToDo
+import com.tunesworks.vodolin.recyclerView.ItemTouchHelper
 import com.tunesworks.vodolin.recyclerView.ToDoAdapter
 import io.realm.Realm
 import io.realm.RealmResults
+import kotlinx.android.synthetic.main.fragment_list.*
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -34,32 +36,29 @@ class ListFragment: Fragment() {
         }
     }
 
-
+    // Observer for update realmResults
     val observer = Observer { observable, data ->
-        if (data is ChangeToDoEvent &&
-                data.itemColorName.compareTo(arguments.getString(KEY_ITEM_COLOR_NAME)) == 0) {
+        Log.d("Observer", "update")
+        if (data is ChangeToDoEvent && data.itemColorName == arguments.getString(KEY_ITEM_COLOR_NAME)) {
             Log.d(data.itemColorName, "notifyDataSetChanged")
-            adapter.notifyDataSetChanged()
+            todoAdapter.notifyDataSetChanged()
         }
     }
+    // Event class
     data class ChangeToDoEvent(val itemColorName: String)
 
     var realm:        Realm by Delegates.notNull<Realm>()
     var realmResults: RealmResults<ToDo> by Delegates.notNull<RealmResults<ToDo>>()
-    var adapter:      ToDoAdapter by Delegates.notNull<ToDoAdapter>()
-    var recyclerView: RecyclerView by Delegates.notNull<RecyclerView>()
+    val todoAdapter: ToDoAdapter by lazy { ToDoAdapter(activity, realmResults) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        realm        = Realm.getInstance(activity)
-        realm.isAutoRefresh = true
-        realmResults = realm.where(ToDo::class.java).equalTo(ToDo::itemColorName.name, arguments.getString(KEY_ITEM_COLOR_NAME)).findAll()
-        //realmResults = realm.where(ToDo::class.java).findAll()
-        realmResults.forEach {
-            Log.d(this.javaClass.name, it.content)
-        }
-        adapter      = ToDoAdapter(activity, realmResults)
 
+        // Init
+        realm        = Realm.getInstance(activity)
+        realmResults = realm.where(ToDo::class.java).equalTo(ToDo::itemColorName.name, arguments.getString(KEY_ITEM_COLOR_NAME)).findAll()
+
+        // Add observer
         VoDolin.observers.addObserver(observer)
     }
 
@@ -69,13 +68,22 @@ class ListFragment: Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback() {
+            override fun onLeftSwipe(viewHolder: RecyclerView.ViewHolder?, position: Int) {
+                super.onLeftSwipe(viewHolder, position)
+            }
 
-        (view?.findViewById(R.id.textView) as TextView).text = arguments.getString(KEY_ITEM_COLOR_NAME)
-        recyclerView = (view?.findViewById(R.id.recycler_view) as RecyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(activity).apply {
-            orientation = LinearLayoutManager.VERTICAL
+            override fun onRightSwipe(viewHolder: RecyclerView.ViewHolder?, position: Int) {
+                super.onRightSwipe(viewHolder, position)
+            }
+        }).apply { attachToRecyclerView(recycler_view) }
+
+        // Set LayoutManager and Adapter
+        recycler_view.apply {
+            layoutManager = LinearLayoutManager(activity).apply { orientation = LinearLayoutManager.VERTICAL }
+            adapter = todoAdapter
+            addItemDecoration(itemTouchHelper)
         }
-        recyclerView.adapter = adapter
     }
 
     override fun onDestroyView() {

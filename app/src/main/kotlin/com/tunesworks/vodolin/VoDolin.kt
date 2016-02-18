@@ -13,7 +13,7 @@ class VoDolin: Application() {
     override fun onCreate() {
         super.onCreate()
         CalligraphyConfig.initDefault(CalligraphyConfig.Builder()
-                .setDefaultFontPath("fonts/Roboto-Black.ttf")
+                .setDefaultFontPath("fonts/Roboto-Light.ttf")
                 .setFontAttrId(R.attr.fontPath)
                 .build()
         )

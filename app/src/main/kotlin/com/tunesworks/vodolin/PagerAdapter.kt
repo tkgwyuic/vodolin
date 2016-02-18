@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.app.FragmentStatePagerAdapter
 import com.tunesworks.vodolin.fragment.ListFragment
+import com.tunesworks.vodolin.value.ItemColor
 
 class PagerAdapter(
         val fragmentManager: FragmentManager
