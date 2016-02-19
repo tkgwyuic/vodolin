@@ -13,7 +13,6 @@ import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.model.ionicons
 import com.tunesworks.vodolin.model.itemColor
-import com.tunesworks.vodolin.model.octicons
 import io.realm.RealmResults
 
 class ToDoAdapter(ctxt: Context, results: RealmResults<ToDo>): RealmRecyclerViewAdapter<ToDo, ToDoAdapter.ViewHolder>(ctxt, results) {

@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.support.design.widget.FloatingActionButton
@@ -86,11 +87,13 @@ class MainActivity : AppCompatActivity() {
                         start()
                     }
 
-                    ValueAnimator.ofObject(ArgbEvaluator(), prevColor, color).apply {
-                        addUpdateListener { window.statusBarColor = it.animatedValue as Int }
-                        duration = 500
-                        interpolator = DecelerateInterpolator()
-                        start()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        ValueAnimator.ofObject(ArgbEvaluator(), prevColor, color).apply {
+                            addUpdateListener { window.statusBarColor = it.animatedValue as Int }
+                            duration = 500
+                            interpolator = DecelerateInterpolator()
+                            start()
+                        }
                     }
 
                     tabs.setSelectedTabIndicatorColor(color)
