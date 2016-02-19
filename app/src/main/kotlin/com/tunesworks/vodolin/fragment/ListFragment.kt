@@ -105,13 +105,15 @@ class ListFragment: Fragment() {
                         }
                         override fun onDismissed(event: Int) {
                             when (event) {
-                                Snackbar.Callback.DISMISS_EVENT_ACTION -> {
+                                Snackbar.Callback.DISMISS_EVENT_ACTION -> handler.post { // Undo
                                     if (realm.isInTransaction) {
                                         realm.cancelTransaction()
+                                        recycler_view.scrollToPosition(position)
                                         todoAdapter.notifyItemInserted(position)
                                     }
                                 }
-                                else -> if (realm.isInTransaction) realm.commitTransaction()
+
+                                else -> handler.post { if (realm.isInTransaction) realm.commitTransaction() }
                             }
                         }
                     })
