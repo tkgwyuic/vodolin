@@ -64,6 +64,17 @@ class ListFragment: Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        // Add observer
+        VoDolin.observers.addObserver(observer)
+
+        return inflater?.inflate(R.layout.fragment_list, container, false)
+    }
+
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Init
         realm        = Realm.getInstance(activity)
@@ -71,17 +82,6 @@ class ListFragment: Fragment() {
                 .equalTo(ToDo::itemColorName.name, arguments.getString(KEY_ITEM_COLOR_NAME))
                 .equalTo(ToDo::statusName.name, ToDoStatus.INCOMPLETE.toString())
                 .findAll()
-
-        // Add observer
-        VoDolin.observers.addObserver(observer)
-    }
-
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_list, container, false)
-    }
-
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
         todoAdapter = ToDoAdapter(activity, realmResults, object : ToDoAdapter.ViewHolder.ItemListener {
             override fun onItemClick(holder: ToDoAdapter.ViewHolder, position: Int) {

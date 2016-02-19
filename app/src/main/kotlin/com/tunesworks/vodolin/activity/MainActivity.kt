@@ -59,7 +59,10 @@ class MainActivity : BaseActivity() {
             startActivityForResult(intent, REQUEST_CODE)
         }
 
-        view_pager.adapter = pagerAdapter
+        view_pager.apply {
+            adapter = pagerAdapter
+            offscreenPageLimit = 5
+        }
 
         tabs.apply {
             var prevItemColor = ItemColor.DEFAULT
