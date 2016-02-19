@@ -5,4 +5,11 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="tabIndicator">#FFFFFF</color>
+
+    <color name="background">#EEEEEE</color>
+
+    <color name="listItem">#FFFFFF</color>
+    <color name="done">#4CAF50</color>
+    <color name="edit">#2196F3</color>
+    <color name="delete">#F44336</color>
 </resources>

@@ -51,10 +51,8 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(toolbar)
 
-//        recyclerView.layoutManager = LinearLayoutManager(this@MainActivity).apply {
-//            orientation = LinearLayoutManager.VERTICAL
-//        }
-//        recyclerView.adapter = adapter
+        appbar.setBackgroundColor(ItemColor.values()[0].color)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) window.statusBarColor = ItemColor.values()[0].color
 
         fab.setOnClickListener { view ->
             //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
@@ -102,9 +100,6 @@ class MainActivity : AppCompatActivity() {
                     view_pager.currentItem = tab.position
                 }
             })
-
-            // Init appbar color
-            getTabAt(selectedTabPosition)?.select()
         }
     }
 

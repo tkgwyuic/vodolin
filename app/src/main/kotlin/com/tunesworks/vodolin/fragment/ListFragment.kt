@@ -1,9 +1,11 @@
 package com.tunesworks.vodolin.fragment
 
+import android.graphics.Rect
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +15,7 @@ import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
 import com.tunesworks.vodolin.model.ToDo
-import com.tunesworks.vodolin.recyclerView.ItemTouchHelper
+import com.tunesworks.vodolin.recyclerView.SwipeCallback
 import com.tunesworks.vodolin.recyclerView.ToDoAdapter
 import io.realm.Realm
 import io.realm.RealmResults
@@ -68,21 +70,23 @@ class ListFragment: Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback() {
-            override fun onLeftSwipe(viewHolder: RecyclerView.ViewHolder?, position: Int) {
-                super.onLeftSwipe(viewHolder, position)
-            }
 
-            override fun onRightSwipe(viewHolder: RecyclerView.ViewHolder?, position: Int) {
-                super.onRightSwipe(viewHolder, position)
+        val ith = object : ItemTouchHelper(object : SwipeCallback(){
+
+        }){
+            override fun getItemOffsets(outRect: Rect?, view: View?, parent: RecyclerView?, state: RecyclerView.State?) {
+                val pos    = parent?.getChildAdapterPosition(view)
+                val top    = if (pos == 0) 16 else 0 // If first item
+                val bottom = if (pos == todoAdapter.itemCount - 1) 72 else 16 // if last item
+                outRect?.set(8, top, 8, bottom) // left top right bottom
             }
-        }).apply { attachToRecyclerView(recycler_view) }
+        }.apply { attachToRecyclerView(recycler_view) }
 
         // Set LayoutManager and Adapter
         recycler_view.apply {
             layoutManager = LinearLayoutManager(activity).apply { orientation = LinearLayoutManager.VERTICAL }
             adapter = todoAdapter
-            addItemDecoration(itemTouchHelper)
+            addItemDecoration(ith)
         }
     }
 

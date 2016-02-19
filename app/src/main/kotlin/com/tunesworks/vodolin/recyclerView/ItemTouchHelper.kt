@@ -3,6 +3,8 @@ package com.tunesworks.vodolin.recyclerView
 import android.graphics.Canvas
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.view.View
+import com.tunesworks.vodolin.R
 
 class ItemTouchHelper(callback: ItemTouchHelper.Callback?) : ItemTouchHelper(callback) {
     abstract class SimpleCallback: ItemTouchHelper.SimpleCallback(0, LEFT or RIGHT) {
@@ -21,16 +23,16 @@ class ItemTouchHelper(callback: ItemTouchHelper.Callback?) : ItemTouchHelper(cal
                 viewHolder as ToDoAdapter.ViewHolder
 
                 viewHolder.apply {
-//                    itemBackground.x = -dX
-//                    if (dX > 0) { // On right swipe
-//                        itemBackground.setBackgroundResource(R.color.finish)
-//                        bgLeftIcon.visibility  = View.VISIBLE
-//                        bgRightIcon.visibility = View.GONE
-//                    } else { // On left swipe
-//                        itemBackground.setBackgroundResource(R.color.edit)
-//                        bgLeftIcon.visibility  = View.GONE
-//                        bgRightIcon.visibility = View.VISIBLE
-//                    }
+                    itemBackground.x = -dX
+                    if (dX > 0) { // On right swipe
+                        itemBackground.setBackgroundResource(R.color.done)
+                        bgLeftIcon.visibility  = View.VISIBLE
+                        bgRightIcon.visibility = View.GONE
+                    } else { // On left swipe
+                        itemBackground.setBackgroundResource(R.color.edit)
+                        bgLeftIcon.visibility  = View.GONE
+                        bgRightIcon.visibility = View.VISIBLE
+                    }
                 }
             }
 

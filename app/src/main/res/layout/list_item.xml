@@ -1,62 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="72dp"
-    android:foreground="?android:attr/selectableItemBackground">
+    android:minHeight="72dp">
 
-    <FrameLayout
-        android:id="@+id/item_label"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_centerInParent="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="16dp">
-        <View
-            android:id="@+id/item_color"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/colorAccent"/>
+    <RelativeLayout
+        android:id="@+id/item_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:background="@color/edit">
         <TextView
-            android:id="@+id/item_icon"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textSize="24dp"
-            android:gravity="center"
-            android:layout_gravity="center"
+            android:id="@+id/bg_left_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             fontPath="fonts/ionicons.ttf"
             tools:ignore="MissingPrefix"
-            android:textColor="#FFFFFF" />
-    </FrameLayout>
+            android:layout_alignParentLeft="true"
+            android:layout_centerInParent="true"
+            android:textSize="24dp"
+            android:textColor="#FFFFFF"
+            android:text=""/>
+        <TextView
+            android:id="@+id/bg_right_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fontPath="fonts/ionicons.ttf"
+            tools:ignore="MissingPrefix"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
+            android:textSize="24dp"
+            android:textColor="#FFFFFF"
+            android:text=""/>
+    </RelativeLayout>
 
-    <TextView
-        android:id="@+id/content"
+
+    <RelativeLayout
+        android:id="@+id/item_foreground"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_marginLeft="72dp"
-        android:layout_marginRight="72dp"/>
+        android:layout_height="match_parent"
+        android:background="@color/listItem"
+        android:foreground="?android:attr/selectableItemBackground">
 
-    <TextView
-        android:id="@+id/item_action"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_centerInParent="true"
-        android:gravity="center"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="16dp"
-        android:textSize="24dp"
-        fontPath="fonts/ionicons.ttf"
-        tools:ignore="MissingPrefix"
-        android:text="">
+        <FrameLayout
+            android:id="@+id/item_label"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="16dp">
+            <View
+                android:id="@+id/item_color"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorAccent"/>
+            <TextView
+                android:id="@+id/item_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="24dp"
+                android:gravity="center"
+                android:layout_gravity="center"
+                fontPath="fonts/ionicons.ttf"
+                tools:ignore="MissingPrefix"
+                android:textColor="#FFFFFF" />
+        </FrameLayout>
 
-    </TextView>
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="72dp"
+            android:layout_marginRight="72dp"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#DDD"
-        android:layout_alignParentBottom="true"/>
+        <TextView
+            android:id="@+id/item_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="16dp"
+            android:textSize="24dp"
+            fontPath="fonts/ionicons.ttf"
+            tools:ignore="MissingPrefix"
+            android:text="">
 
-</RelativeLayout>
+        </TextView>
+
+        <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:background="#DDD"-->
+            <!--android:layout_alignParentBottom="true"/>-->
+
+    </RelativeLayout>
+</FrameLayout>

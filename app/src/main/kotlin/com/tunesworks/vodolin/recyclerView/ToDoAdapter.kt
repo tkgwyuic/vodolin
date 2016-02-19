@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import android.widget.TextView
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.model.ToDo
@@ -45,5 +46,9 @@ class ToDoAdapter(ctxt: Context, results: RealmResults<ToDo>): RealmRecyclerView
         val content = itemView.findViewById(R.id.content) as TextView
         val itemColor = itemView.findViewById(R.id.item_color)
         val itemIcon  = itemView.findViewById(R.id.item_icon) as TextView
+        val itemBackground = itemView.findViewById(R.id.item_background) as RelativeLayout
+        val itemForeground = itemView.findViewById(R.id.item_foreground) as RelativeLayout
+        val bgLeftIcon = itemView.findViewById(R.id.bg_left_icon) as TextView
+        val bgRightIcon = itemView.findViewById(R.id.bg_right_icon) as TextView
     }
 }
