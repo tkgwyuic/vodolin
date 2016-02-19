@@ -8,6 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
 
         <item name="android:windowBackground">@color/background</item>
+        <item name="colorControlHighlight">@color/color_control_highlight</item>
+        <item name="android:selectableItemBackground">@drawable/pre_lollipop_selectable_item</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

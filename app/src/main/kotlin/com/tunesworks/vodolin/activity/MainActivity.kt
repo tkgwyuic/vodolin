@@ -61,7 +61,7 @@ class MainActivity : BaseActivity() {
 
         view_pager.apply {
             adapter = pagerAdapter
-            offscreenPageLimit = 5
+            offscreenPageLimit = 3
         }
 
         tabs.apply {

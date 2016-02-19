@@ -4,12 +4,14 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="tabIndicator">#FFFFFF</color>
+    <color name="tab_indicator">#FFFFFF</color>
 
-    <color name="background">#EEEEEE</color>
+    <color name="background">#ECEFF1</color>
 
-    <color name="listItem">#FFFFFF</color>
+    <color name="list_item">#FFFFFF</color>
     <color name="done">#4CAF50</color>
     <color name="edit">#2196F3</color>
     <color name="delete">#F44336</color>
+
+    <color name="color_control_highlight">#1F000000</color>
 </resources>
