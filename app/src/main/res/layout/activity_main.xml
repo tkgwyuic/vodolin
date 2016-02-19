@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout
+    android:id="@+id/coordinator"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".activity.MainActivity">
+    tools:context=".activity.MainActivity"
+    android:layout_weight="1">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
@@ -25,7 +26,7 @@
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/actionBarSize"
             app:tabIndicatorColor="@color/tab_indicator"
             app:tabMaxWidth="0dp"
             app:tabGravity="fill"
@@ -35,9 +36,9 @@
 
 
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:orientation="vertical"
         android:foreground="?android:windowContentOverlay">
@@ -45,15 +46,40 @@
         <android.support.v4.view.ViewPager
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email" />
+    <RelativeLayout
+        android:id="@+id/footer"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        app:layout_anchor="@id/coordinator"
+        app:layout_anchorGravity="bottom"
+        app:layout_behavior="com.tunesworks.vodolin.FooterBehavior"
+        android:background="@android:drawable/dialog_holo_light_frame"
+        android:foreground="?android:attr/selectableItemBackground">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="40dp"
+            android:textColor="@color/hint_text"
+            android:singleLine="true"
+            android:hint="Input your ToDo..."/>
+        <TextView
+            android:id="@+id/footer_action"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:layout_alignParentRight="true"
+            fontPath="fonts/ionicons.ttf"
+            tools:ignore="MissingPrefix"
+            android:layout_marginRight="4dp"
+            android:textSize="24dp"
+            android:text=""
+            android:foreground="?android:attr/selectableItemBackground"/>
+    </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

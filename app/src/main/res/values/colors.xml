@@ -4,6 +4,10 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
+    <color name="primary_text">#DE000000</color>
+    <color name="secondary_text">#8A000000</color>
+    <color name="hint_text">#61000000</color>
+
     <color name="tab_indicator">#FFFFFF</color>
 
     <color name="background">#ECEFF1</color>
@@ -12,6 +16,9 @@
     <color name="done">#4CAF50</color>
     <color name="edit">#2196F3</color>
     <color name="delete">#F44336</color>
+
+    <color name="footer">#DDD</color>
+    <color name="divider">#323232</color>
 
     <color name="color_control_highlight">#1F000000</color>
 </resources>

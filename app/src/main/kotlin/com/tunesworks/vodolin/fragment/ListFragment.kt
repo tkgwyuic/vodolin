@@ -92,7 +92,7 @@ class ListFragment: Fragment() {
 
         val ith = ToDoItemTouchHelper(object : SwipeCallback(){
             override fun onRightSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
-                Snackbar.make((activity as MainActivity).fab, "Marked as done", Snackbar.LENGTH_LONG).apply {
+                Snackbar.make((activity as MainActivity).coordinator, "Marked as done", Snackbar.LENGTH_LONG).apply {
                     setAction("UNDO", {})
                     setCallback(object : SnackbarCallback() {
                         override fun onShown(snackbar: Snackbar?) {
