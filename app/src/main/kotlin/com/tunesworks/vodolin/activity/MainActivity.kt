@@ -1,4 +1,4 @@
-package com.tunesworks.vodolin
+package com.tunesworks.vodolin.activity
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
@@ -22,28 +22,24 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
+import com.tunesworks.vodolin.fragment.PagerAdapter
+import com.tunesworks.vodolin.R
+import com.tunesworks.vodolin.VoDolin
+import com.tunesworks.vodolin.activity.BaseActivity
 import com.tunesworks.vodolin.fragment.ListFragment
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.value.ItemColor
+import com.tunesworks.vodolin.value.primary
+import com.tunesworks.vodolin.value.primaryDark
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper
 import java.util.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
     val REQUEST_CODE = 0
 
-    val dataList = ArrayList<String>()
-
     val pagerAdapter by lazy { PagerAdapter(supportFragmentManager) }
-    //val toolbar      by lazy { findViewById(R.id.toolbar) as Toolbar }
-    //val fab          by lazy { findViewById(R.id.fab) as FloatingActionButton }
-    //val tabs         by lazy { findViewById(R.id.tabs) as TabLayout }
-    //val viewPager    by lazy { findViewById(R.id.view_pager) as ViewPager }
-
-    override fun attachBaseContext(newBase: Context?) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase))
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,8 +51,6 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) window.statusBarColor = ItemColor.values()[0].color
 
         fab.setOnClickListener { view ->
-            //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
-
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 putExtra(RecognizerIntent.EXTRA_PROMPT, "Please Speech")
@@ -65,10 +59,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         view_pager.adapter = pagerAdapter
-        tabs.setupWithViewPager(view_pager)
 
         tabs.apply {
-            var prevColor = ItemColor.DEFAULT.color
+            var prevItemColor = ItemColor.DEFAULT
+
+            setupWithViewPager(view_pager)
+
             setOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabReselected(tab: TabLayout.Tab?) {}
                 override fun onTabUnselected(tab: TabLayout.Tab?) {}
@@ -76,9 +72,9 @@ class MainActivity : AppCompatActivity() {
                     tab ?: return
 
                     // Set selected tab indicator color
-                    val color = ItemColor.values()[tab.position].color
+                    val itemColor = ItemColor.values()[tab.position]
 
-                    ValueAnimator.ofObject(ArgbEvaluator(), prevColor, color).apply {
+                    ValueAnimator.ofObject(ArgbEvaluator(), prevItemColor.primary, itemColor.primary).apply {
                         addUpdateListener { appbar.setBackgroundColor(it.animatedValue as Int) }
                         duration = 500
                         interpolator = DecelerateInterpolator()
@@ -86,7 +82,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        ValueAnimator.ofObject(ArgbEvaluator(), prevColor, color).apply {
+                        ValueAnimator.ofObject(ArgbEvaluator(), prevItemColor.primaryDark, itemColor.primaryDark).apply {
                             addUpdateListener { window.statusBarColor = it.animatedValue as Int }
                             duration = 500
                             interpolator = DecelerateInterpolator()
@@ -94,8 +90,8 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    tabs.setSelectedTabIndicatorColor(color)
-                    prevColor = color
+                    //tabs.setSelectedTabIndicatorColor(itemColor.lighten(0.6))
+                    prevItemColor = itemColor
 
                     view_pager.currentItem = tab.position
                 }
@@ -141,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
             VoDolin.observers.apply {
                 setChanged()
-                notifyObservers( ListFragment.ChangeToDoEvent(todo.itemColorName) )
+                notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
             }
 
             //dataList.add(0, results.first())

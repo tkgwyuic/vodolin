@@ -2,6 +2,7 @@ package com.tunesworks.vodolin.model
 
 import com.tunesworks.vodolin.value.Ionicons
 import com.tunesworks.vodolin.value.ItemColor
+import com.tunesworks.vodolin.value.ToDoStatus
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 import io.realm.annotations.RealmClass
@@ -12,6 +13,7 @@ open class ToDo(
         open var uuid: String = UUID.randomUUID().toString(),
 
         open var content:       String = "",
+        open var statusName:    String = ToDoStatus.INCOMPLETE.toString(),
         open var itemColorName: String = ItemColor.DEFAULT.toString(),
         open var ioniconsName:  String = Ionicons.DEFAULT.toString(),
         open var deadline:      Date?  = null,
@@ -26,3 +28,7 @@ var ToDo.itemColor: ItemColor
 var ToDo.ionicons: Ionicons
         get() = Ionicons.valueOf(ioniconsName)
         set(value) { ioniconsName = value.toString() }
+
+var ToDo.status: ToDoStatus
+        get() = ToDoStatus.valueOf(statusName)
+        set(value) { statusName = value.toString() }

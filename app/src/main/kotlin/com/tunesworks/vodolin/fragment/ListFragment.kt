@@ -2,23 +2,30 @@ package com.tunesworks.vodolin.fragment
 
 import android.graphics.Rect
 import android.os.Bundle
+import android.os.Handler
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.tunesworks.vodolin.activity.MainActivity
 import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.R
+import com.tunesworks.vodolin.SnackbarCallback
 import com.tunesworks.vodolin.VoDolin
 import com.tunesworks.vodolin.model.ToDo
+import com.tunesworks.vodolin.model.status
+import com.tunesworks.vodolin.recyclerView.ToDoItemTouchHelper
 import com.tunesworks.vodolin.recyclerView.SwipeCallback
 import com.tunesworks.vodolin.recyclerView.ToDoAdapter
+import com.tunesworks.vodolin.value.ToDoStatus
 import io.realm.Realm
 import io.realm.RealmResults
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_list.*
 import java.util.*
 import kotlin.properties.Delegates
@@ -52,13 +59,17 @@ class ListFragment: Fragment() {
     var realm:        Realm by Delegates.notNull<Realm>()
     var realmResults: RealmResults<ToDo> by Delegates.notNull<RealmResults<ToDo>>()
     val todoAdapter: ToDoAdapter by lazy { ToDoAdapter(activity, realmResults) }
+    val handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Init
         realm        = Realm.getInstance(activity)
-        realmResults = realm.where(ToDo::class.java).equalTo(ToDo::itemColorName.name, arguments.getString(KEY_ITEM_COLOR_NAME)).findAll()
+        realmResults = realm.where(ToDo::class.java)
+                .equalTo(ToDo::itemColorName.name, arguments.getString(KEY_ITEM_COLOR_NAME))
+                .equalTo(ToDo::statusName.name, ToDoStatus.INCOMPLETE.toString())
+                .findAll()
 
         // Add observer
         VoDolin.observers.addObserver(observer)
@@ -71,16 +82,37 @@ class ListFragment: Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val ith = object : ItemTouchHelper(object : SwipeCallback(){
-
-        }){
-            override fun getItemOffsets(outRect: Rect?, view: View?, parent: RecyclerView?, state: RecyclerView.State?) {
-                val pos    = parent?.getChildAdapterPosition(view)
-                val top    = if (pos == 0) 16 else 0 // If first item
-                val bottom = if (pos == todoAdapter.itemCount - 1) 72 else 16 // if last item
-                outRect?.set(8, top, 8, bottom) // left top right bottom
+        val ith = ToDoItemTouchHelper(object : SwipeCallback(){
+            override fun onRightSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
+                Snackbar.make((activity as MainActivity).fab, "Marked as done", Snackbar.LENGTH_LONG).apply {
+                    setAction("UNDO", {})
+                    setCallback(object : SnackbarCallback() {
+                        override fun onShown(snackbar: Snackbar?) {
+                            handler.post {
+                                if (realm.isInTransaction) realm.cancelTransaction()
+                                realm.beginTransaction()
+                                realmResults[position].status = ToDoStatus.COMPLETE
+                                todoAdapter.notifyItemRemoved(position)
+                            }
+                        }
+                        override fun onDismissed(event: Int) {
+                            when (event) {
+                                Snackbar.Callback.DISMISS_EVENT_ACTION -> {
+                                    if (realm.isInTransaction) {
+                                        realm.cancelTransaction()
+                                        todoAdapter.notifyItemInserted(position)
+                                    }
+                                }
+                                else -> if (realm.isInTransaction) realm.commitTransaction()
+                            }
+                        }
+                    })
+                }.show()
             }
-        }.apply { attachToRecyclerView(recycler_view) }
+
+            override fun onLeftSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
+            }
+        }).apply { attachToRecyclerView(recycler_view) }
 
         // Set LayoutManager and Adapter
         recycler_view.apply {
