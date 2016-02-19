@@ -26,6 +26,7 @@ import com.tunesworks.vodolin.recyclerView.ToDoAdapter
 import com.tunesworks.vodolin.value.ToDoStatus
 import io.realm.Realm
 import io.realm.RealmResults
+import io.realm.Sort
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_list.*
 import java.util.*
@@ -81,7 +82,7 @@ class ListFragment: Fragment() {
         realmResults = realm.where(ToDo::class.java)
                 .equalTo(ToDo::itemColorName.name, arguments.getString(KEY_ITEM_COLOR_NAME))
                 .equalTo(ToDo::statusName.name, ToDoStatus.INCOMPLETE.toString())
-                .findAll()
+                .findAllSorted(ToDo::createdAt.name, Sort.DESCENDING)
 
         todoAdapter = ToDoAdapter(activity, realmResults, object : ToDoAdapter.ViewHolder.ItemListener {
             override fun onItemClick(holder: ToDoAdapter.ViewHolder, position: Int) {
