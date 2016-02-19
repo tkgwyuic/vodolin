@@ -17,6 +17,7 @@ import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.SnackbarCallback
 import com.tunesworks.vodolin.VoDolin
+import com.tunesworks.vodolin.activity.DetailActivity
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.model.status
 import com.tunesworks.vodolin.recyclerView.ToDoItemTouchHelper
@@ -58,7 +59,7 @@ class ListFragment: Fragment() {
 
     var realm:        Realm by Delegates.notNull<Realm>()
     var realmResults: RealmResults<ToDo> by Delegates.notNull<RealmResults<ToDo>>()
-    val todoAdapter: ToDoAdapter by lazy { ToDoAdapter(activity, realmResults) }
+    var todoAdapter:  ToDoAdapter by Delegates.notNull<ToDoAdapter>()
     val handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,6 +82,13 @@ class ListFragment: Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        todoAdapter = ToDoAdapter(activity, realmResults, object : ToDoAdapter.ViewHolder.ItemListener {
+            override fun onItemClick(holder: ToDoAdapter.ViewHolder, position: Int) {
+                DetailActivity.IntentBuilder.from(activity).setUUID(realmResults[position].uuid).start()
+            }
+        })
+
 
         val ith = ToDoItemTouchHelper(object : SwipeCallback(){
             override fun onRightSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {

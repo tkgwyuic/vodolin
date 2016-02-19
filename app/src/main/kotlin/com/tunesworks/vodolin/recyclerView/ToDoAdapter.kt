@@ -16,11 +16,11 @@ import com.tunesworks.vodolin.model.ionicons
 import com.tunesworks.vodolin.model.itemColor
 import io.realm.RealmResults
 
-class ToDoAdapter(ctxt: Context, results: RealmResults<ToDo>): RealmRecyclerViewAdapter<ToDo, ToDoAdapter.ViewHolder>(ctxt, results) {
+class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: ViewHolder.ItemListener): RealmRecyclerViewAdapter<ToDo, ToDoAdapter.ViewHolder>(context, results) {
     val inflater = LayoutInflater.from(context)
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder? {
-        return ViewHolder(inflater.inflate(ViewHolder.LAYOUT_ID, parent, false))
+        return ViewHolder(inflater.inflate(ViewHolder.LAYOUT_ID, parent, false), listener)
     }
 
     override fun onBindViewHolder(holder: ViewHolder?, position: Int) {
@@ -38,7 +38,7 @@ class ToDoAdapter(ctxt: Context, results: RealmResults<ToDo>): RealmRecyclerView
     override fun getItemCount() = realmResults.size
 
 
-    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View, val listener: ItemListener): RecyclerView.ViewHolder(itemView), View.OnClickListener {
         companion object {
             val LAYOUT_ID = R.layout.list_item
         }
@@ -50,5 +50,20 @@ class ToDoAdapter(ctxt: Context, results: RealmResults<ToDo>): RealmRecyclerView
         val itemForeground = itemView.findViewById(R.id.item_foreground) as RelativeLayout
         val bgLeftIcon = itemView.findViewById(R.id.bg_left_icon) as TextView
         val bgRightIcon = itemView.findViewById(R.id.bg_right_icon) as TextView
+
+        init {
+            itemView.setOnClickListener(this)
+        }
+
+        override fun onClick(view: View?) {
+            when (view?.id) {
+
+            }
+            listener.onItemClick(this, adapterPosition)
+        }
+
+        interface ItemListener {
+            fun onItemClick(holder: ViewHolder, position: Int)
+        }
     }
 }

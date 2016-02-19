@@ -46,6 +46,7 @@ class MainActivity : BaseActivity() {
         setContentView(R.layout.activity_main)
 
         setSupportActionBar(toolbar)
+        supportActionBar?.title = "ToDo List"
 
         appbar.setBackgroundColor(ItemColor.values()[0].color)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) window.statusBarColor = ItemColor.values()[0].color
