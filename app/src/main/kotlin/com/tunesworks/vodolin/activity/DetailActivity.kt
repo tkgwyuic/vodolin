@@ -1,5 +1,6 @@
 package com.tunesworks.vodolin.activity
 
+import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -11,6 +12,8 @@ import com.tunesworks.vodolin.value.primary
 import com.tunesworks.vodolin.value.primaryDark
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_detail.*
+import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
+import uk.co.chrisjenx.calligraphy.CalligraphyUtils
 import kotlin.properties.Delegates
 
 class DetailActivity: BaseActivity() {

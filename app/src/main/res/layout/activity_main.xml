@@ -29,7 +29,8 @@
             app:tabIndicatorColor="@color/tab_indicator"
             app:tabMaxWidth="0dp"
             app:tabGravity="fill"
-            app:tabMode="fixed" />
+            app:tabMode="fixed"
+            app:tabTextAppearance="@style/CustomTabTextAppearance"/>
 
     </android.support.design.widget.AppBarLayout>
 

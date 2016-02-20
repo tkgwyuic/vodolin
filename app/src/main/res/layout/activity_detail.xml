@@ -18,19 +18,26 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
         <TextView
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#FFF"/>
+            android:textSize="24sp"
+            android:text="Your ToDo"
+            android:padding="16dp"
+            android:textColor="#FFF"
+            fontPath="fonts/GenShinGothic-Light.ttf"
+        tools:ignore="MissingPrefix"/>
 
     </android.support.design.widget.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <TextView
             android:layout_width="wrap_content"
