@@ -4,9 +4,9 @@ import android.graphics.Color
 
 enum class ItemColor(val color: Int) {
     BLUE   ("#0074bf".parseColor()),
-    ORANGE ("#de9610".parseColor()),
+    PURPLE ("#9460a0".parseColor()),
     RED    ("#c93a40".parseColor()),
-    YELLOW ("#f2cf01".parseColor()),
+    ORANGE ("#d16b16".parseColor()),
     GREEN  ("#56a764".parseColor());
 
     companion object {

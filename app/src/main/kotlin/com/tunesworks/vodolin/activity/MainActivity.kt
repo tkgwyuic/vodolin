@@ -161,7 +161,7 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        if (modal_shadow.visibility == View.VISIBLE) finishInputMode()
+        if (footer_edit.isFocused) finishInputMode()
         else super.onBackPressed()
     }
 
@@ -200,7 +200,7 @@ class MainActivity : BaseActivity() {
 
     fun finishInputMode() {
         // Change focus from edit text
-        modal_shadow.requestFocus()
+        coordinator.requestFocus()
 
         // Hide keyboard
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
