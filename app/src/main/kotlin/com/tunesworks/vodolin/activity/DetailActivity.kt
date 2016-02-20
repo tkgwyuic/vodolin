@@ -28,7 +28,12 @@ class DetailActivity: BaseActivity() {
         supportActionBar?.title = ""
 
         Realm.getInstance(this).use { realm ->
-            todo = realm.where(ToDo::class.java).equalTo(ToDo::uuid.name, intent.getStringExtra(KEY_UUID)).findFirst()
+            // Copy stand alone realm object
+            todo = realm.copyFromRealm(
+                    realm.where(ToDo::class.java)
+                            .equalTo(ToDo::uuid.name, intent.getStringExtra(KEY_UUID))
+                            .findFirst()
+            )
         }
         content.text = todo.content
 
