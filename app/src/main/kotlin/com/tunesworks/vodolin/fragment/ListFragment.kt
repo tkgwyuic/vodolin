@@ -1,43 +1,38 @@
 package com.tunesworks.vodolin.fragment
 
-import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import com.tunesworks.vodolin.activity.MainActivity
-import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.SnackbarCallback
 import com.tunesworks.vodolin.VoDolin
 import com.tunesworks.vodolin.activity.DetailActivity
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.model.status
-import com.tunesworks.vodolin.recyclerView.ToDoItemTouchHelper
 import com.tunesworks.vodolin.recyclerView.SwipeCallback
 import com.tunesworks.vodolin.recyclerView.ToDoAdapter
+import com.tunesworks.vodolin.recyclerView.ToDoItemTouchHelper
+import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.value.ToDoStatus
 import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.Sort
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_list.*
 import java.util.*
 import kotlin.properties.Delegates
 
-class ListFragment: Fragment() {
+class ListFragment: BaseFragment() {
     companion object {
         val KEY_ITEM_COLOR_NAME = "KEY_ITEM_COLOR_NAME"
 
-        fun newInstance(itemColor: ItemColor): Fragment {
-            val args     = Bundle().apply {
+        fun newInstance(itemColor: ItemColor?): Fragment {
+            val args = Bundle().apply {
                 putString(KEY_ITEM_COLOR_NAME, itemColor.toString())
             }
 
@@ -49,9 +44,7 @@ class ListFragment: Fragment() {
 
     // Observer for update realmResults
     val observer = Observer { observable, data ->
-        Log.d("Observer", "update")
         if (data is ChangeToDoEvent && data.itemColorName == arguments.getString(KEY_ITEM_COLOR_NAME)) {
-            Log.d(data.itemColorName, "notifyDataSetChanged")
             todoAdapter.notifyDataSetChanged()
         }
     }
@@ -93,7 +86,7 @@ class ListFragment: Fragment() {
 
         val ith = ToDoItemTouchHelper(object : SwipeCallback(){
             override fun onRightSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
-                Snackbar.make((activity as MainActivity).coordinator, "Marked as done", Snackbar.LENGTH_LONG).apply {
+                baseActivity.makeSnackbar("Marked as done")?.apply {
                     setAction("UNDO", {})
                     setCallback(object : SnackbarCallback() {
                         override fun onShown(snackbar: Snackbar?) {
@@ -114,11 +107,14 @@ class ListFragment: Fragment() {
                                     }
                                 }
 
+                                // Do
                                 else -> handler.post { if (realm.isInTransaction) realm.commitTransaction() }
                             }
                         }
                     })
-                }.show()
+
+                    show()
+                }
             }
 
             override fun onLeftSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {

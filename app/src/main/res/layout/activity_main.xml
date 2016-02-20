@@ -17,7 +17,6 @@
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
-            android:title="ToDo List"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:layout_scrollFlags="scroll|enterAlways"
@@ -52,7 +51,7 @@
     <RelativeLayout
         android:id="@+id/footer"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="@dimen/footer_size"
         app:layout_anchor="@id/coordinator"
         app:layout_anchorGravity="bottom"
         app:layout_behavior="com.tunesworks.vodolin.FooterBehavior"
@@ -77,9 +76,9 @@
             fontPath="fonts/ionicons.ttf"
             tools:ignore="MissingPrefix"
             android:layout_marginRight="4dp"
-            android:textSize="24dp"
+            android:textSize="@dimen/icon_size"
             android:text=""
-            android:foreground="?android:attr/selectableItemBackground"/>
+            android:background="?android:attr/selectableItemBackground"/>
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

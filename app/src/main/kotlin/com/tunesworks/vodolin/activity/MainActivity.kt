@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.TabLayout
 import android.support.v4.view.ViewCompat
@@ -22,6 +23,7 @@ import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.widget.TextView
 import android.widget.Toast
 import com.tunesworks.vodolin.fragment.PagerAdapter
 import com.tunesworks.vodolin.R
@@ -76,9 +78,9 @@ class MainActivity : BaseActivity() {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
                     tab ?: return
 
-                    // Set selected tab indicator color
                     val itemColor = ItemColor.values()[tab.position]
 
+                    // Animation toolbar background color
                     ValueAnimator.ofObject(ArgbEvaluator(), prevItemColor.primary, itemColor.primary).apply {
                         addUpdateListener { appbar.setBackgroundColor(it.animatedValue as Int) }
                         duration = 500
@@ -86,6 +88,7 @@ class MainActivity : BaseActivity() {
                         start()
                     }
 
+                    // Animation statusbar color
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         ValueAnimator.ofObject(ArgbEvaluator(), prevItemColor.primaryDark, itemColor.primaryDark).apply {
                             addUpdateListener { window.statusBarColor = it.animatedValue as Int }
@@ -95,9 +98,10 @@ class MainActivity : BaseActivity() {
                         }
                     }
 
-                    //tabs.setSelectedTabIndicatorColor(itemColor.lighten(0.6))
+                    // Save color
                     prevItemColor = itemColor
 
+                    // Scroll view pager
                     view_pager.currentItem = tab.position
                 }
             })
@@ -111,14 +115,8 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.itemId
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true
+        when (item.itemId) {
+            R.id.action_settings -> return true
         }
 
         return super.onOptionsItemSelected(item)
@@ -126,28 +124,35 @@ class MainActivity : BaseActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if ((REQUEST_CODE == requestCode) && (RESULT_OK == resultCode)) {
-            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS) ?: return
-            Toast.makeText(this, results.first(), Toast.LENGTH_LONG).show()
-
-            val todo = ToDo(
-                    content = results.first(),
-                    itemColorName = ItemColor.values()[tabs.selectedTabPosition].toString()
-            )
-
-            Realm.getInstance(this).use { realm ->
-                realm.executeTransaction {
-                    realm.copyToRealm(todo)
-                }
-            }
-
-            VoDolin.observers.apply {
-                setChanged()
-                notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
-            }
-
-            //dataList.add(0, results.first())
-            //adapter.notifyItemInserted(0)
+            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            if (results != null) createToDo(results.first())
         }
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun getSnackbarContainer(): CoordinatorLayout? {
+        return coordinator
+    }
+
+    fun createToDo(content: String) {
+        val todo = ToDo(
+                content = content,
+                itemColorName = ItemColor.values()[tabs.selectedTabPosition].toString()
+        )
+
+        Realm.getInstance(this).use { realm ->
+            if (realm.isInTransaction) realm.commitTransaction()
+            realm.executeTransaction { realm.copyToRealm(todo) }
+        }
+
+        VoDolin.observers.apply {
+            setChanged()
+            notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
+        }
+
+        makeSnackbar("Create new ToDo !")?.apply {
+            setAction("EDIT", {})
+            show()
+        }
     }
 }
