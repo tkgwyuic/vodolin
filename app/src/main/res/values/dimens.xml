@@ -5,4 +5,5 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="footer_size">72dp</dimen>
     <dimen name="icon_size">24dp</dimen>
+    <dimen name="label_text">13sp</dimen>
 </resources>

@@ -18,7 +18,7 @@
     <color name="delete">#F44336</color>
 
     <color name="footer">#FFFFFF</color>
-    <color name="divider">#323232</color>
+    <color name="divider">#1F000000</color>
 
     <color name="color_control_highlight">#1F000000</color>
 </resources>

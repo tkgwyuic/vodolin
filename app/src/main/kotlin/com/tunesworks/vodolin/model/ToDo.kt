@@ -1,11 +1,13 @@
 package com.tunesworks.vodolin.model
 
+import android.text.format.DateFormat
 import com.tunesworks.vodolin.value.Ionicons
 import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.value.ToDoStatus
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 import io.realm.annotations.RealmClass
+import java.text.SimpleDateFormat
 import java.util.*
 
 open class ToDo(
@@ -32,3 +34,5 @@ var ToDo.ionicons: Ionicons
 var ToDo.status: ToDoStatus
         get() = ToDoStatus.valueOf(statusName)
         set(value) { statusName = value.toString() }
+
+fun Date.format(fmt: String = "yyyy/MM/dd(E) kk:mm") = DateFormat.format(fmt, this)

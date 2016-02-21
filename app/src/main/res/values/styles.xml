@@ -6,7 +6,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-
+        <item name="windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="colorControlHighlight">@color/color_control_highlight</item>
         <item name="android:selectableItemBackground">@drawable/pre_lollipop_selectable_item</item>

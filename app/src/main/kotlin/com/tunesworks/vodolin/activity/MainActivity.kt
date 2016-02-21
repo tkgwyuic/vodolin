@@ -32,6 +32,7 @@ import com.tunesworks.vodolin.VoDolin
 import com.tunesworks.vodolin.activity.BaseActivity
 import com.tunesworks.vodolin.fragment.ListFragment
 import com.tunesworks.vodolin.model.ToDo
+import com.tunesworks.vodolin.model.itemColor
 import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.value.primary
 import com.tunesworks.vodolin.value.primaryDark
@@ -185,9 +186,11 @@ class MainActivity : BaseActivity() {
             notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
         }
 
-        makeSnackbar("Create new ToDo !")?.apply {
+        makeSnackbar("Create new ToDo!")?.apply {
+            setActionTextColor(todo.itemColor.primary)
             setAction("EDIT", {
                 // ToDo: start edit activity
+                DetailActivity.IntentBuilder.from(this@MainActivity).setUUID(todo.uuid).start()
             })
             show()
         }
