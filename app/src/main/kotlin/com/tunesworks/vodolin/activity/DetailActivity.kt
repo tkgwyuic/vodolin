@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.widget.Toast
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
@@ -69,12 +70,38 @@ class DetailActivity: BaseActivity() {
                     setChanged()
                     notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
                 }
-            }
-            finish()
+
+                finishWithToast("Modified.")
+            } else finishWithToast("Error! Not modified.") // Realm is not in transaction
         }
 
         // On delete icon click
-        delete.setOnClickListener {  }
+        delete.setOnClickListener {
+            // Show confirm dialog
+            AlertDialog.Builder(this)
+                    .setTitle("Warning")
+                    .setMessage("Delete the this ToDo?")
+                    .setPositiveButton("YES", { dialog, witch ->
+                        if (realm.isInTransaction) {
+                            // Save color name
+                            var itemColorName = todo.itemColorName
+
+                            // Remove & Commit
+                            todo.removeFromRealm()
+                            realm.commitTransaction()
+
+                            // Notify
+                            VoDolin.observers.apply {
+                                setChanged()
+                                notifyObservers(ListFragment.ChangeToDoEvent(itemColorName))
+                            }
+
+                            finishWithToast("Deleted.")
+                        } else finishWithToast("Error! Not deleted.") // Realm is not in transaction
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show()
+        }
 
         // Set text
         content.setText(todo.content)
@@ -102,17 +129,21 @@ class DetailActivity: BaseActivity() {
     }
 
     override fun onBackPressed() {
-        if (todo.content == content.text.toString()
-                || todo.memo == memo.text.toString()) isEdited = true
-
-        if (isEdited) {
-            // ToDo: Show confirm dialog
+        if (todo.content != content.text.toString() || todo.memo != memo.text.toString()) {
+            // Show confirm dialog
+            AlertDialog.Builder(this)
+                    .setTitle("Warning!")
+                    .setMessage("It has been changed!\nDiscard the changes?")
+                    .setPositiveButton("YES", { dialog, witch ->
+                        if (realm.isInTransaction) realm.cancelTransaction()
+                        super.onBackPressed()
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show()
+        } else {
+            if (realm.isInTransaction) realm.cancelTransaction()
+            super.onBackPressed()
         }
-
-        if (realm.isInTransaction) {
-            realm.cancelTransaction()
-        }
-        super.onBackPressed()
     }
 
     private fun finishWithToast(msg: String) {
