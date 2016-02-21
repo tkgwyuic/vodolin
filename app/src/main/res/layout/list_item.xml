@@ -84,8 +84,6 @@
             android:layout_marginLeft="56dp"
             android:layout_marginRight="24dp"
             android:textSize="14sp"
-            fontPath="fonts/GenShinGothic-Light.ttf"
-            tools:ignore="MissingPrefix"
             android:text="Your ToDo"/>
 
         <TextView

@@ -119,9 +119,7 @@
                         android:textSize="17sp"
                         android:hint="Your ToDo"
                         android:textColor="@color/primary_text"
-                        android:textColorHint="@color/hint_text"
-                        fontPath="fonts/GenShinGothic-Light.ttf"
-                        tools:ignore="MissingPrefix"/>
+                        android:textColorHint="@color/hint_text"/>
                 </android.support.design.widget.TextInputLayout>
 
             </LinearLayout>
@@ -146,9 +144,7 @@
                         android:textSize="17sp"
                         android:hint="Memo"
                         android:textColorHint="@color/hint_text"
-                        android:textColor="@color/secondary_text"
-                        fontPath="fonts/GenShinGothic-Light.ttf"
-                        tools:ignore="MissingPrefix"/>
+                        android:textColor="@color/secondary_text"/>
 
                 </android.support.design.widget.TextInputLayout>
             </LinearLayout>
