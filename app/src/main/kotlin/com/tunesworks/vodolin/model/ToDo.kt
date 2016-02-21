@@ -15,6 +15,7 @@ open class ToDo(
         open var uuid: String = UUID.randomUUID().toString(),
 
         open var content:       String = "",
+        open var memo:          String = "",
         open var statusName:    String = ToDoStatus.INCOMPLETE.toString(),
         open var itemColorName: String = ItemColor.DEFAULT.toString(),
         open var ioniconsName:  String = Ionicons.DEFAULT.toString(),

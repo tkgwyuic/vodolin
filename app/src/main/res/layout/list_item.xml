@@ -28,7 +28,7 @@
             android:layout_centerInParent="true"
             android:textSize="@dimen/icon_size"
             android:textColor="#FFFFFF"
-            android:text=""/>
+            android:text="@string/icon_done"/>
         <TextView
             android:id="@+id/bg_right_icon"
             android:layout_width="wrap_content"
@@ -39,7 +39,7 @@
             android:layout_centerInParent="true"
             android:textSize="@dimen/icon_size"
             android:textColor="#FFFFFF"
-            android:text=""/>
+            android:text="@string/icon_edit"/>
     </RelativeLayout>
 
 
@@ -98,7 +98,7 @@
             android:textSize="@dimen/icon_size"
             fontPath="fonts/ionicons.ttf"
             tools:ignore="MissingPrefix"
-            android:text="">
+            android:text="@string/icon_notification_off">
 
         </TextView>
 

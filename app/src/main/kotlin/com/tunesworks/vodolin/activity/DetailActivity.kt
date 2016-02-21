@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
 import com.tunesworks.vodolin.fragment.ListFragment
@@ -25,75 +26,98 @@ class DetailActivity: BaseActivity() {
 
     var todo: ToDo by Delegates.notNull<ToDo>()
     var realm: Realm by Delegates.notNull<Realm>()
+    var isEdited = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
         // Realm
-        realm = Realm.getInstance(this)
-        realm.beginTransaction()
-        todo = realm.where(ToDo::class.java)
-                .equalTo(ToDo::uuid.name, intent.getStringExtra(KEY_UUID))
-                .findFirst()
+        realm = Realm.getInstance(this).apply {
+            if (isInTransaction) cancelTransaction()
+            beginTransaction()
+        }
 
-        // Toolbar and StatusBar
+        // Set realm object
+        todo = realm.where(ToDo::class.java)
+                .equalTo(ToDo::uuid.name, intent.getStringExtra(KEY_UUID) ?: "")
+                .findFirst() ?: return finishWithToast("ToDo Not Found...")
+
+        // Toolbar
         setSupportActionBar(toolbar)
         supportActionBar?.title = ""
+
+        // StatusBar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) window.statusBarColor = todo.itemColor.primaryDark
 
-        // Close icon
+        // On close icon click
         close.setOnClickListener { onBackPressed() }
 
-        // Done icon
+        // On done icon click
         done.setOnClickListener {
-            // Set values
-            todo.updatedAt = Date()
-            todo.content = content.text.toString()
+            if (realm.isInTransaction) {
+                // Set values
+                todo.updatedAt = Date()
+                todo.content   = content.text.toString()
+                todo.memo      = memo.text.toString()
 
-            // Commit
-            if (realm.isInTransaction) realm.commitTransaction()
+                // Commit
+                realm.commitTransaction()
 
-            // Notify
-            VoDolin.observers.apply {
-                setChanged()
-                notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
+                // Notify
+                VoDolin.observers.apply {
+                    setChanged()
+                    notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
+                }
             }
-
             finish()
         }
 
-        // Delete icon
+        // On delete icon click
         delete.setOnClickListener {  }
 
-        // Content edit text
+        // Set text
         content.setText(todo.content)
+        memo.setText(todo.memo)
 
-        // Memo edit text
-        //memo.setText()
-
-        item_label.background = GradientDrawable().apply {
-            setColor(todo.itemColor.color)
-            setShape(GradientDrawable.OVAL)
+        // Set item label icon and color
+        item_label.apply {
+            text       = todo.ionicons.icon
+            background = GradientDrawable().apply {
+                setColor(todo.itemColor.color)
+                setShape(GradientDrawable.OVAL)
+            }
         }
-        item_label.text = todo.ionicons.icon
 
+        // Created at & Updated at
         created_at.text = todo.createdAt.format()
         updated_at.text = todo.updatedAt.format()
     }
 
     override fun onDestroy() {
-        if (realm.isClosed) realm.cancelTransaction()
+        // Realm
+        if (realm.isInTransaction) realm.cancelTransaction()
         if (!realm.isClosed) realm.close()
         super.onDestroy()
     }
 
     override fun onBackPressed() {
-        if (realm.isInTransaction) {
+        if (todo.content == content.text.toString()
+                || todo.memo == memo.text.toString()) isEdited = true
+
+        if (isEdited) {
             // ToDo: Show confirm dialog
+        }
+
+        if (realm.isInTransaction) {
             realm.cancelTransaction()
         }
         super.onBackPressed()
+    }
+
+    private fun finishWithToast(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        finish()
     }
 
     open class IntentBuilder(val context: Context) {
