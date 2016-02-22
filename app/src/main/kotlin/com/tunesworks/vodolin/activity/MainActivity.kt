@@ -4,47 +4,38 @@ import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
 import android.speech.RecognizerIntent
 import android.support.design.widget.CoordinatorLayout
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.design.widget.TabLayout
-import android.support.v4.view.ViewCompat
-import android.support.v4.view.ViewPager
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
-import android.util.Log
-import android.view.*
+import android.support.v7.view.ActionMode
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
-import android.widget.Toast
-import com.tunesworks.vodolin.fragment.PagerAdapter
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
-import com.tunesworks.vodolin.activity.BaseActivity
 import com.tunesworks.vodolin.fragment.ListFragment
+import com.tunesworks.vodolin.fragment.PagerAdapter
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.model.itemColor
+import com.tunesworks.vodolin.model.status
 import com.tunesworks.vodolin.value.ItemColor
+import com.tunesworks.vodolin.value.ToDoStatus
 import com.tunesworks.vodolin.value.primary
 import com.tunesworks.vodolin.value.primaryDark
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper
-import java.util.*
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener {
     val REQUEST_CODE = 0
 
     val pagerAdapter by lazy { PagerAdapter(supportFragmentManager) }
+    var actionMode: ActionMode? = null
+    var isActionModeStarted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -134,9 +125,16 @@ class MainActivity : BaseActivity() {
 
                     // Scroll view pager
                     view_pager.currentItem = tab.position
+
+                    // Finish ActionMode
+                    actionMode?.finish()
                 }
             })
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -210,5 +208,53 @@ class MainActivity : BaseActivity() {
                 .hideSoftInputFromWindow(modal_shadow.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
         // Hide modal shadow
         modal_shadow.visibility = View.GONE
+    }
+
+    override fun onItemSelectionChanged(selectedItemCount: Int, itemColor: ItemColor) {
+        if (selectedItemCount > 0) { // Selected item
+            if (!isActionModeStarted) {
+                actionMode = startSupportActionMode( object : ActionMode.Callback {
+                    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+                        isActionModeStarted = true
+                        menu?.clear()
+                        mode?.menuInflater?.inflate(R.menu.action_mode, menu)
+                        return true
+                    }
+
+                    override fun onActionItemClicked(mode: ActionMode?, menuItem: MenuItem?): Boolean {
+                        val pos = ItemColor.values().indexOf(itemColor)
+                        val fragment = pagerAdapter.instantiateItem(view_pager, pos) as ListFragment
+                        when (menuItem?.itemId) {
+                            R.id.done -> {
+                                fragment.dismissSelectedItems { it.status = ToDoStatus.DONE }
+                            }
+                            R.id.failed -> {
+                                fragment.dismissSelectedItems { it.status = ToDoStatus.FAILED }
+                            }
+                            R.id.delete -> {
+                                fragment.dismissSelectedItems { it.removeFromRealm() }
+                            }
+                        }
+                        mode?.finish()
+                        return true
+                    }
+
+                    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+                        mode?.title = "$selectedItemCount Selected"
+                        return true
+                    }
+
+                    override fun onDestroyActionMode(mode: ActionMode?) {
+                        val pos = ItemColor.values().indexOf(itemColor)
+                        (pagerAdapter.instantiateItem(view_pager, pos) as ListFragment).todoAdapter.clearSelections()
+                        isActionModeStarted = false
+                    }
+                })
+            } else { // ActionMode already started
+                actionMode?.title = "$selectedItemCount Selected"
+            }
+        } else { // Not selected
+            actionMode?.finish()
+        }
     }
 }

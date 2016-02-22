@@ -23,4 +23,6 @@
     <color name="divider">#1F000000</color>
 
     <color name="color_control_highlight">#1F000000</color>
+
+    <color name="action_mode">#B0BEC5</color>
 </resources>

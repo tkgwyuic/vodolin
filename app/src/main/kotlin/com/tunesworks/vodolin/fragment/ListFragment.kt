@@ -1,5 +1,6 @@
 package com.tunesworks.vodolin.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.Snackbar
@@ -52,10 +53,24 @@ class ListFragment: BaseFragment() {
     // Event class
     data class ChangeToDoEvent(val itemColorName: String)
 
+    // Listener
+    interface OnItemSelectionChangeListener {
+        open fun onItemSelectionChanged(selectedItemCount: Int, itemColor :ItemColor) {}
+    }
+
     var realm:        Realm by Delegates.notNull<Realm>()
     var realmResults: RealmResults<ToDo> by Delegates.notNull<RealmResults<ToDo>>()
     var todoAdapter:  ToDoAdapter by Delegates.notNull<ToDoAdapter>()
     val handler = Handler()
+    var onItemselectionChangeListener: OnItemSelectionChangeListener? = null
+    var itemColor: ItemColor by Delegates.notNull<ItemColor>()
+
+    override fun onAttach(context: Context?) {
+        // Set listener
+        if (context is OnItemSelectionChangeListener) onItemselectionChangeListener = context
+
+        super.onAttach(context)
+    }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Add observer
@@ -67,10 +82,12 @@ class ListFragment: BaseFragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        itemColor = ItemColor.valueOf(arguments.getString(KEY_ITEM_COLOR_NAME))
+
         // Realm init
         realm        = Realm.getInstance(activity)
         realmResults = realm.where(ToDo::class.java)
-                .equalTo(ToDo::itemColorName.name, arguments.getString(KEY_ITEM_COLOR_NAME))
+                .equalTo(ToDo::itemColorName.name, itemColor.toString())
                 .equalTo(ToDo::statusName.name, ToDoStatus.INCOMPLETE.toString())
                 .findAllSorted(ToDo::createdAt.name, Sort.DESCENDING)
 
@@ -78,11 +95,13 @@ class ListFragment: BaseFragment() {
         todoAdapter = ToDoAdapter(activity, realmResults, object : ToDoAdapter.ViewHolder.ItemListener {
             override fun onItemSelect(holder: ToDoAdapter.ViewHolder, position: Int) {
                 todoAdapter.toggleSelection(position)
+                onItemselectionChangeListener?.onItemSelectionChanged(todoAdapter.getSelectedItemCount(), itemColor)
             }
 
             override fun onItemClick(holder: ToDoAdapter.ViewHolder, position: Int) {
                 if (todoAdapter.getSelectedItemCount() > 0) { // Selected some item
                     todoAdapter.toggleSelection(position)
+                    onItemselectionChangeListener?.onItemSelectionChanged(todoAdapter.getSelectedItemCount(), itemColor)
                 } else { // Not selected
                     // Start DetailActivity
                     DetailActivity.IntentBuilder
@@ -158,5 +177,44 @@ class ListFragment: BaseFragment() {
         super.onDestroyView()
         VoDolin.observers.deleteObserver(observer)
         realm.close()
+    }
+
+    fun dismissSelectedItems(func: (ToDo) -> Unit) {
+        val selectedItemCount = todoAdapter.getSelectedItemCount()
+        val selectedItems     = todoAdapter.getSelectedItems()
+
+        baseActivity.makeSnackbar("Marked as Done")?.apply {
+            setAction("UNDO", {})
+            // Set callback and transaction
+            setCallback(object : SnackbarCallback() {
+                override fun onShown(snackbar: Snackbar?) {
+                    // Change value
+                    handler.post {
+                        if (realm.isInTransaction) realm.cancelTransaction()
+                        realm.beginTransaction()
+                        selectedItems.forEach { func.invoke(it) }
+                        todoAdapter.notifyDataSetChanged()
+                    }
+                }
+
+                override fun onDismissed(event: Int) {
+                    handler.post {
+                        if (realm.isInTransaction) {
+                            if (event == Snackbar.Callback.DISMISS_EVENT_ACTION) { // On action button click
+                                // Cancel transaction
+                                realm.cancelTransaction()
+
+                                // Notify
+                                todoAdapter.notifyDataSetChanged()
+                            } else { // On dismissed
+                                // Commit transaction
+                                realm.commitTransaction()
+                            }
+                        }
+                    }
+                }
+            })
+            show()
+        }
     }
 }
