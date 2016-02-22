@@ -129,7 +129,8 @@ class DetailActivity: BaseActivity() {
     }
 
     override fun onBackPressed() {
-        if (todo.content != content.text.toString() || todo.memo != memo.text.toString()) {
+        if (todo.content != content.text.toString().trim { it == ' ' || it == '　' }
+                || todo.memo != memo.text.toString().trim { it == ' ' || it == '　' }) {
             // Show confirm dialog
             AlertDialog.Builder(this)
                     .setTitle("Warning!")

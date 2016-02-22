@@ -9,82 +9,87 @@
     android:clickable="true"
     android:clipToPadding="false"
     android:foreground="?android:attr/selectableItemBackground"
-    app:cardUseCompatPadding="true"
-    >
-    <RelativeLayout
+    app:cardUseCompatPadding="true">
+
+    <!-- Background -->
+    <FrameLayout
         android:id="@+id/item_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:background="@color/edit">
+        android:gravity="center_vertical">
         <TextView
             android:id="@+id/bg_left_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            fontPath="fonts/ionicons.ttf"
-            tools:ignore="MissingPrefix"
-            android:layout_alignParentLeft="true"
-            android:layout_centerInParent="true"
+            android:layout_gravity="start|center"
             android:textSize="@dimen/icon_size"
             android:textColor="#FFFFFF"
-            android:text="@string/icon_done"/>
+            android:text="@string/icon_done"
+            tools:ignore="MissingPrefix"
+            fontPath="fonts/ionicons.ttf"/>
         <TextView
             android:id="@+id/bg_right_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            fontPath="fonts/ionicons.ttf"
-            tools:ignore="MissingPrefix"
-            android:layout_alignParentRight="true"
-            android:layout_centerInParent="true"
+            android:layout_gravity="end|center"
             android:textSize="@dimen/icon_size"
             android:textColor="#FFFFFF"
-            android:text="@string/icon_close"/>
-    </RelativeLayout>
+            android:text="@string/icon_close"
+            tools:ignore="MissingPrefix"
+            fontPath="fonts/ionicons.ttf"/>
+    </FrameLayout>
 
-
-
+    <!-- Foreground -->
     <RelativeLayout
         android:id="@+id/item_foreground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/list_item"
-        android:padding="16dp"
-        android:elevation="2dp">
+        android:padding="16dp">
 
-        <FrameLayout
+        <TextView
             android:id="@+id/item_label"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:textSize="@dimen/icon_size"
             android:layout_centerInParent="true"
-            android:layout_alignParentLeft="true">
-            <View
-                android:id="@+id/item_color"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/colorAccent"/>
-            <TextView
-                android:id="@+id/item_icon"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textSize="@dimen/icon_size"
-                android:gravity="center"
-                android:layout_gravity="center"
-                fontPath="fonts/ionicons.ttf"
-                tools:ignore="MissingPrefix"
-                android:textColor="#FFFFFF" />
-        </FrameLayout>
+            android:layout_alignParentLeft="true"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            tools:ignore="MissingPrefix"
+            fontPath="fonts/ionicons.ttf">
+        </TextView>
 
-        <TextView
-            android:id="@+id/content"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_centerInParent="true"
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="56dp"
-            android:layout_marginRight="24dp"
-            android:textSize="14sp"
-            android:text="Your ToDo"/>
+            android:layout_marginRight="28dp">
+            <TextView
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textSize="@dimen/body"
+                android:textColor="@color/primary_text"
+                android:text="Your ToDo"/>
+
+            <TextView
+                android:id="@+id/memo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textSize="@dimen/caption"
+                android:textColor="@color/hint_text"
+                android:text="Your Hint"/>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/item_action"
@@ -99,14 +104,5 @@
             android:text="@string/icon_notification_off">
 
         </TextView>
-
-        <!--<View-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="1dp"-->
-        <!--android:background="#DDD"-->
-        <!--android:layout_alignParentBottom="true"/>-->
-
     </RelativeLayout>
-
-
 </android.support.v7.widget.CardView>

@@ -57,10 +57,6 @@ class ListFragment: BaseFragment() {
     var todoAdapter:  ToDoAdapter by Delegates.notNull<ToDoAdapter>()
     val handler = Handler()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Add observer
         VoDolin.observers.addObserver(observer)
@@ -71,20 +67,33 @@ class ListFragment: BaseFragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Init
+        // Realm init
         realm        = Realm.getInstance(activity)
         realmResults = realm.where(ToDo::class.java)
                 .equalTo(ToDo::itemColorName.name, arguments.getString(KEY_ITEM_COLOR_NAME))
                 .equalTo(ToDo::statusName.name, ToDoStatus.INCOMPLETE.toString())
                 .findAllSorted(ToDo::createdAt.name, Sort.DESCENDING)
 
+        // Create recycler view adapter
         todoAdapter = ToDoAdapter(activity, realmResults, object : ToDoAdapter.ViewHolder.ItemListener {
+            override fun onItemSelect(holder: ToDoAdapter.ViewHolder, position: Int) {
+                todoAdapter.toggleSelection(position)
+            }
+
             override fun onItemClick(holder: ToDoAdapter.ViewHolder, position: Int) {
-                DetailActivity.IntentBuilder.from(activity).setUUID(realmResults[position].uuid).start()
+                if (todoAdapter.getSelectedItemCount() > 0) { // Selected some item
+                    todoAdapter.toggleSelection(position)
+                } else { // Not selected
+                    // Start DetailActivity
+                    DetailActivity.IntentBuilder
+                            .from(activity)
+                            .setUUID(realmResults[position].uuid)
+                            .start()
+                }
             }
         })
 
-
+        // Create item decoration
         val ith = ToDoItemTouchHelper(object : SwipeCallback(){
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
                 var position = viewHolder?.adapterPosition ?: return
@@ -135,43 +144,9 @@ class ListFragment: BaseFragment() {
                     show()
                 }
             }
-//            override fun onRightSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
-//                baseActivity.makeSnackbar("Marked as done")?.apply {
-//                    setAction("UNDO", {})
-//                    setCallback(object : SnackbarCallback() {
-//                        override fun onShown(snackbar: Snackbar?) {
-//                            handler.post {
-//                                if (realm.isInTransaction) realm.cancelTransaction()
-//                                realm.beginTransaction()
-//                                realmResults[position].status = ToDoStatus.COMPLETE
-//                                todoAdapter.notifyItemRemoved(position)
-//                            }
-//                        }
-//                        override fun onDismissed(event: Int) {
-//                            when (event) {
-//                                Snackbar.Callback.DISMISS_EVENT_ACTION -> handler.post { // Undo
-//                                    if (realm.isInTransaction) {
-//                                        realm.cancelTransaction()
-//                                        recycler_view.scrollToPosition(position)
-//                                        todoAdapter.notifyItemInserted(position)
-//                                    }
-//                                }
-//
-//                                // Do
-//                                else -> handler.post { if (realm.isInTransaction) realm.commitTransaction() }
-//                            }
-//                        }
-//                    })
-//
-//                    show()
-//                }
-//            }
-//
-//            override fun onLeftSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
-//            }
         }).apply { attachToRecyclerView(recycler_view) }
 
-        // Set LayoutManager and Adapter
+        // Set LayoutManager, Adapter and ItemDecoration
         recycler_view.apply {
             layoutManager = LinearLayoutManager(activity).apply { orientation = LinearLayoutManager.VERTICAL }
             adapter = todoAdapter

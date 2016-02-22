@@ -38,6 +38,8 @@ abstract class RealmRecyclerViewAdapter<T: RealmObject, VH: RecyclerView.ViewHol
         notifyDataSetChanged()
     }
 
+    fun isSelected(position: Int) = selectedItemPositions.find { it == position } != null
+
     fun getSelectedItemCount() = selectedItemPositions.size
 
     fun notifySelectedItemInserted() {

@@ -9,6 +9,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.tunesworks.vodolin.R
@@ -19,6 +21,8 @@ import io.realm.RealmResults
 
 class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: ViewHolder.ItemListener): RealmRecyclerViewAdapter<ToDo, ToDoAdapter.ViewHolder>(context, results) {
     val inflater = LayoutInflater.from(context)
+    val VIEW_TYPE_DEFAULT = 0
+    val VIEW_TYPE_SELECTED = 1
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder? {
         return ViewHolder(inflater.inflate(ViewHolder.LAYOUT_ID, parent, false), listener)
@@ -26,35 +30,66 @@ class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: V
 
     override fun onBindViewHolder(holder: ViewHolder?, position: Int) {
         val todo = realmResults[position]
+        val viewType = getItemViewType(position)
+
         holder?.apply {
-            content.text = realmResults[position].content
-            itemColor.background = GradientDrawable().apply {
+            // Set content
+            content.text = todo.content
+
+            // Set memo
+            memo.apply {
+                if (todo.memo == "") visibility = View.GONE
+                else {
+                    visibility = View.VISIBLE
+                    text = todo.memo
+                }
+            }
+
+            // Set item label background
+            itemLabel.background = GradientDrawable().apply {
                 setColor(todo.itemColor.color)
                 setShape(GradientDrawable.OVAL)
             }
-            itemIcon.text = todo.ionicons.icon
+
+            // Set foreground color and item label icon
+            when (viewType) {
+                VIEW_TYPE_DEFAULT  -> {
+                    itemForeground.setBackgroundResource(R.color.list_item)
+                    itemLabel.text = todo.ionicons.icon
+                }
+                VIEW_TYPE_SELECTED -> {
+                    itemForeground.setBackgroundResource(R.color.list_item_selected)
+                    itemLabel.setText(R.string.icon_done)
+                }
+            }
         }
     }
 
     override fun getItemCount() = realmResults.size
 
+    override fun getItemViewType(position: Int): Int {
+        if (isSelected(position)) return VIEW_TYPE_SELECTED
+        else return VIEW_TYPE_DEFAULT
+    }
 
-    class ViewHolder(itemView: View, val listener: ItemListener): RecyclerView.ViewHolder(itemView), View.OnClickListener {
+
+    class ViewHolder(itemView: View, val listener: ItemListener): RecyclerView.ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
         companion object {
             val LAYOUT_ID = R.layout.list_item
         }
 
         val cardView = itemView.findViewById(R.id.card_view) as CardView
         val content = itemView.findViewById(R.id.content) as TextView
-        val itemColor = itemView.findViewById(R.id.item_color)
-        val itemIcon  = itemView.findViewById(R.id.item_icon) as TextView
-        val itemBackground = itemView.findViewById(R.id.item_background) as RelativeLayout
+        val memo = itemView.findViewById(R.id.memo) as TextView
+        val itemLabel = itemView.findViewById(R.id.item_label) as TextView
+        val itemBackground = itemView.findViewById(R.id.item_background) as FrameLayout
         val itemForeground = itemView.findViewById(R.id.item_foreground) as RelativeLayout
         val bgLeftIcon = itemView.findViewById(R.id.bg_left_icon) as TextView
         val bgRightIcon = itemView.findViewById(R.id.bg_right_icon) as TextView
 
         init {
             itemView.setOnClickListener(this)
+            itemView.setOnLongClickListener(this)
         }
 
         override fun onClick(view: View?) {
@@ -64,8 +99,14 @@ class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: V
             listener.onItemClick(this, adapterPosition)
         }
 
+        override fun onLongClick(view: View?): Boolean {
+            listener.onItemSelect(this, adapterPosition)
+            return true
+        }
+
         interface ItemListener {
-            fun onItemClick(holder: ViewHolder, position: Int)
+            fun onItemClick(holder: ViewHolder,  position: Int)
+            fun onItemSelect(holder: ViewHolder, position: Int)
         }
     }
 }
