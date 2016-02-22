@@ -6,6 +6,7 @@ import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -85,30 +86,48 @@ class ListFragment: BaseFragment() {
 
 
         val ith = ToDoItemTouchHelper(object : SwipeCallback(){
-            override fun onRightSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
+                var position = viewHolder?.adapterPosition ?: return
+                val status   = if (direction == ItemTouchHelper.RIGHT) ToDoStatus.DONE else ToDoStatus.FAILED
+
                 baseActivity.makeSnackbar("Marked as done")?.apply {
+                    // Set text
+                    when (direction) {
+                        ItemTouchHelper.RIGHT -> setText(R.string.done)
+                        ItemTouchHelper.LEFT  -> setText(R.string.failed)
+                        else -> return
+                    }
+
+                    // Set action text
                     setAction("UNDO", {})
+
+                    // Set callback and transaction
                     setCallback(object : SnackbarCallback() {
                         override fun onShown(snackbar: Snackbar?) {
+                            // Change value
                             handler.post {
                                 if (realm.isInTransaction) realm.cancelTransaction()
                                 realm.beginTransaction()
-                                realmResults[position].status = ToDoStatus.COMPLETE
+                                realmResults[position].status = status
                                 todoAdapter.notifyItemRemoved(position)
                             }
                         }
+
                         override fun onDismissed(event: Int) {
-                            when (event) {
-                                Snackbar.Callback.DISMISS_EVENT_ACTION -> handler.post { // Undo
-                                    if (realm.isInTransaction) {
+                            handler.post {
+                                if (realm.isInTransaction) {
+                                    if (event == Snackbar.Callback.DISMISS_EVENT_ACTION) { // On action button click
+                                        // Cancel transaction
                                         realm.cancelTransaction()
+
+                                        // Scroll and Notify
                                         recycler_view.scrollToPosition(position)
                                         todoAdapter.notifyItemInserted(position)
+                                    } else { // On dismissed
+                                        // Commit transaction
+                                        realm.commitTransaction()
                                     }
                                 }
-
-                                // Do
-                                else -> handler.post { if (realm.isInTransaction) realm.commitTransaction() }
                             }
                         }
                     })
@@ -116,9 +135,40 @@ class ListFragment: BaseFragment() {
                     show()
                 }
             }
-
-            override fun onLeftSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
-            }
+//            override fun onRightSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
+//                baseActivity.makeSnackbar("Marked as done")?.apply {
+//                    setAction("UNDO", {})
+//                    setCallback(object : SnackbarCallback() {
+//                        override fun onShown(snackbar: Snackbar?) {
+//                            handler.post {
+//                                if (realm.isInTransaction) realm.cancelTransaction()
+//                                realm.beginTransaction()
+//                                realmResults[position].status = ToDoStatus.COMPLETE
+//                                todoAdapter.notifyItemRemoved(position)
+//                            }
+//                        }
+//                        override fun onDismissed(event: Int) {
+//                            when (event) {
+//                                Snackbar.Callback.DISMISS_EVENT_ACTION -> handler.post { // Undo
+//                                    if (realm.isInTransaction) {
+//                                        realm.cancelTransaction()
+//                                        recycler_view.scrollToPosition(position)
+//                                        todoAdapter.notifyItemInserted(position)
+//                                    }
+//                                }
+//
+//                                // Do
+//                                else -> handler.post { if (realm.isInTransaction) realm.commitTransaction() }
+//                            }
+//                        }
+//                    })
+//
+//                    show()
+//                }
+//            }
+//
+//            override fun onLeftSwiped(viewHolder: RecyclerView.ViewHolder?, position: Int) {
+//            }
         }).apply { attachToRecyclerView(recycler_view) }
 
         // Set LayoutManager and Adapter

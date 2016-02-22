@@ -39,7 +39,7 @@
             android:layout_centerInParent="true"
             android:textSize="@dimen/icon_size"
             android:textColor="#FFFFFF"
-            android:text="@string/icon_edit"/>
+            android:text="@string/icon_close"/>
     </RelativeLayout>
 
 

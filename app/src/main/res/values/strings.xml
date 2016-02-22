@@ -2,6 +2,10 @@
     <string name="app_name">VoDolin</string>
     <string name="action_settings">Settings</string>
 
+    <string name="done">Marked as Done</string>
+    <string name="failed">Marked as Failed</string>
+
+    <!-- Icons -->
     <string name="icon_close"></string>
     <string name="icon_done"></string>
     <string name="icon_edit"></string>

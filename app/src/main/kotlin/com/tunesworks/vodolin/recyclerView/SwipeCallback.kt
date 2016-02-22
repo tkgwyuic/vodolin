@@ -29,7 +29,7 @@ abstract class SwipeCallback: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.
                     bgLeftIcon.visibility  = View.VISIBLE
                     bgRightIcon.visibility = View.GONE
                 } else { // On left swipe
-                    itemBackground.setBackgroundResource(R.color.edit)
+                    itemBackground.setBackgroundResource(R.color.failed)
                     bgLeftIcon.visibility  = View.GONE
                     bgRightIcon.visibility = View.VISIBLE
                 }

@@ -1,7 +1,7 @@
 package com.tunesworks.vodolin.value
 
 enum class ToDoStatus {
-    COMPLETE,
+    DONE,
     INCOMPLETE,
-    FAILURE;
+    FAILED;
 }
