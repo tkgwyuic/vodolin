@@ -6,7 +6,10 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.Toolbar
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
@@ -37,7 +40,7 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        // Realm
+        // Get Realm instance
         realm = Realm.getInstance(this).apply {
             if (isInTransaction) cancelTransaction()
             beginTransaction()
@@ -48,75 +51,26 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener {
                 .equalTo(ToDo::uuid.name, intent.getStringExtra(KEY_UUID) ?: "")
                 .findFirst() ?: return finishWithToast("Error: ToDo not found")
 
+        // Save item color name
         prevItemColorName = todo.itemColorName
 
-        // Toolbar
+        // Set Toolbar
         setSupportActionBar(toolbar)
-        supportActionBar?.title = ""
+        supportActionBar?.apply {
+            title = ""
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(R.drawable.ic_close_black_24dp)
+            setHomeButtonEnabled(true)
+        }
 
-        // StatusBar
+        // Set StatusBar color
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) window.statusBarColor = todo.itemColor.primaryDark
-
-        // On close icon click
-        close.setOnClickListener { onBackPressed() }
-
-        // On done icon click
-        done.setOnClickListener {
-            if (realm.isInTransaction) {
-                // Set values
-                todo.updatedAt = Date()
-                todo.content   = content.text.toString()
-                todo.memo      = memo.text.toString()
-
-                // Commit
-                realm.commitTransaction()
-
-                // Notify
-                VoDolin.observers.apply {
-                    notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
-
-                    if (todo.itemColorName != prevItemColorName) {
-                        notifyObservers(ListFragment.ChangeToDoEvent(prevItemColorName))
-                        notifyObservers(MainActivity.RequestTabScrollEvent(todo.itemColorName))
-                    }
-                }
-
-                finishWithToast("Modified")
-            } else finishWithToast("Error! Not modified") // Realm is not in transaction
-        }
-
-        // On delete icon click
-        delete.setOnClickListener {
-            // Show confirm dialog
-            AlertDialog.Builder(this)
-                    .setTitle("Warning")
-                    .setMessage("Delete the this ToDo?")
-                    .setPositiveButton("YES", { dialog, witch ->
-                        if (realm.isInTransaction) {
-                            // Save color name
-                            var itemColorName = todo.itemColorName
-
-                            // Remove & Commit
-                            todo.removeFromRealm()
-                            realm.commitTransaction()
-
-                            // Notify
-                            VoDolin.observers.apply {
-                                notifyObservers(ListFragment.ChangeToDoEvent(itemColorName))
-                            }
-
-                            finishWithToast("Deleted.")
-                        } else finishWithToast("Error! Not deleted") // Realm is not in transaction
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show()
-        }
 
         // Set text
         content.setText(todo.content)
         memo.setText(todo.memo)
 
-        // Set item label icon and color
+        // Set item label
         item_label.apply {
             text       = todo.ionicons.icon
             background = GradientDrawable().apply {
@@ -124,27 +78,94 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener {
                 setShape(GradientDrawable.OVAL)
             }
 
-            setOnClickListener {
-                ItemLabelDialog().show(supportFragmentManager, "ItemLabel")
-            }
+            // Show dialog
+            setOnClickListener { ItemLabelDialog().show(supportFragmentManager, "ItemLabel") }
         }
 
-        // Created at & Updated at
+        // Set Created at and Updated at
         created_at.text = todo.createdAt.format()
         updated_at.text = todo.updatedAt.format()
     }
 
     override fun onDestroy() {
-        // Realm
+        // Close Realm
         if (realm.isInTransaction) realm.cancelTransaction()
         if (!realm.isClosed) realm.close()
         super.onDestroy()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_detail, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            // Discard changes
+            android.R.id.home -> onBackPressed()
+
+            // Save changes
+            R.id.done -> {
+                if (realm.isInTransaction) {
+                    // Set values
+                    todo.updatedAt = Date()
+                    todo.content   = content.text.toString()
+                    todo.memo      = memo.text.toString()
+
+                    // Commit
+                    realm.commitTransaction()
+
+                    // Notify
+                    VoDolin.observers.apply {
+                        notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
+
+                        if (todo.itemColorName != prevItemColorName) {
+                            notifyObservers(ListFragment.ChangeToDoEvent(prevItemColorName))
+                            notifyObservers(MainActivity.RequestTabScrollEvent(todo.itemColorName))
+                        }
+                    }
+
+                    finishWithToast("Modified")
+                } else finishWithToast("Error! Not modified") // Realm is not in transaction
+            }
+
+            // Delete
+            R.id.delete -> {
+                // Show confirm dialog
+                AlertDialog.Builder(this)
+                        .setTitle("Warning")
+                        .setMessage("Delete the this ToDo?")
+                        .setPositiveButton("YES", { dialog, witch ->
+                            if (realm.isInTransaction) {
+                                // Save color name
+                                var itemColorName = todo.itemColorName
+
+                                // Remove & Commit
+                                todo.removeFromRealm()
+                                realm.commitTransaction()
+
+                                // Notify
+                                VoDolin.observers.apply {
+                                    notifyObservers(ListFragment.ChangeToDoEvent(itemColorName))
+                                }
+
+                                finishWithToast("Deleted.")
+                            } else finishWithToast("Error! Not deleted") // Realm is not in transaction
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show()
+            }
+            else -> return false
+        }
+        return true
+    }
+
     override fun onBackPressed() {
+        // Check values changes
         if (todo.content != content.text.toString().trim { it == ' ' || it == '　' } ||
                 todo.memo != memo.text.toString().trim { it == ' ' || it == '　' } ||
                 todo.itemColorName != prevItemColorName) {
+
             // Show confirm dialog
             AlertDialog.Builder(this)
                     .setTitle("Warning!")
@@ -155,17 +176,18 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener {
                     })
                     .setNegativeButton("Cancel", null)
                     .show()
-        } else {
+        } else { // No changes
             if (realm.isInTransaction) realm.cancelTransaction()
             super.onBackPressed()
         }
     }
 
     override fun onItemLabelSet(itemColor: ItemColor, ionicons: Ionicons) {
+        // Set values
         todo.itemColor = itemColor
         todo.ionicons  = ionicons
 
-        // Set item label icon and color
+        // Set item label
         item_label.apply {
             text       = todo.ionicons.icon
             background = GradientDrawable().apply {
