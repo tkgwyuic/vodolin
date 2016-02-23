@@ -11,6 +11,6 @@ class ToDoItemTouchHelper(callback: ItemTouchHelper.Callback) : ItemTouchHelper(
         val pos    = parent?.getChildAdapterPosition(view) ?: -1
         val count  = parent?.adapter?.itemCount ?: 0
         val bottom = if (pos >= count-1) 72 else 0 // if last item
-        outRect?.set(4, 4, 4, bottom) // left top right bottom
+        outRect?.set(0, 0, 0, bottom) // left top right bottom
     }
 }

@@ -1,23 +1,47 @@
 package com.tunesworks.vodolin.value
 
 enum class Ionicons(val icon: String) {
-    FLASK(""),
+    LIGHT_BULB(""),
     HEART(""),
     HEART_BROKEN(""),
-    CALL(""),
-    CART(""),
-    CHATBUBBLE(""),
-    CLOCK(""),
-    SOCIAL_ANDROID(""),
-    LIGHTBULB(""),
-    PAW(""),
     STAR(""),
+    ALERT(""),
+    BUG(""),
+    PAW(""),
     MUSIC(""),
-    TRAIN(""),
+    FLASK(""),
+
+    PERSON(""),
+    CLOCK(""),
+    BRIEFCASE(""),
+    DOCUMENT(""),
+
+    CART(""),
+
     WALK(""),
-    WINEGLASS("");
+    BICYCLE(""),
+    CAR(""),
+    BUS(""),
+    BOAT(""),
+    TRAIN(""),
+    PLANE(""),
+
+    CALL(""),
+    MAIL(""),
+    CHAT(""),
+
+    FORK(""),
+    COFFEE(""),
+    PINT(""),
+    WINEGLASS(""),
+
+    SOCIAL_ANDROID(""),
+    SOCIAL_APPLE(""),
+    SOCIAL_OCTCAT(""),
+    SOCIAL_SKYPE(""),
+    SOCIAL_TWITTER("");
 
     companion object {
-        val DEFAULT = LIGHTBULB
+        val DEFAULT = LIGHT_BULB
     }
 }

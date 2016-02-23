@@ -1,10 +1,7 @@
 package com.tunesworks.vodolin.fragment
 
-import android.animation.Animator
 import android.app.Dialog
 import android.content.Context
-import android.content.DialogInterface
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
@@ -12,7 +9,10 @@ import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.GridView
+import android.widget.RelativeLayout
+import android.widget.TextView
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.value.Ionicons
 import com.tunesworks.vodolin.value.ItemColor
@@ -37,17 +37,7 @@ class ItemLabelDialog: DialogFragment() {
         val gridView   = customView.findViewById(R.id.grid_view) as GridView
 
         colorAdapter = GridViewAdapter(context, ItemColor.values().toList(), {
-            gridView.animate().setDuration(200).setListener(object : Animator.AnimatorListener {
-                override fun onAnimationEnd(p0: Animator?) {
-                    gridView.adapter = iconAdapter
-                    gridView.animate().setDuration(200).alpha(1f)
-                }
-                override fun onAnimationStart(p0: Animator?) {}
-                override fun onAnimationRepeat(p0: Animator?) {}
-                override fun onAnimationCancel(p0: Animator?) {}
-
-            }).alpha(0f)
-
+            gridView.adapter = iconAdapter
             itemColor = it
         })
 
