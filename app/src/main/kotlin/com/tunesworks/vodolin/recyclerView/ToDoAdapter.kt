@@ -78,11 +78,10 @@ class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: V
             val LAYOUT_ID = R.layout.list_item
         }
 
-        val cardView = itemView.findViewById(R.id.card_view) as CardView
         val content = itemView.findViewById(R.id.content) as TextView
         val memo = itemView.findViewById(R.id.memo) as TextView
         val itemLabel = itemView.findViewById(R.id.item_label) as TextView
-        val itemBackground = itemView.findViewById(R.id.item_background) as FrameLayout
+        val itemBackground = itemView.findViewById(R.id.item_background) as RelativeLayout
         val itemForeground = itemView.findViewById(R.id.item_foreground) as RelativeLayout
         val bgLeftIcon = itemView.findViewById(R.id.bg_left_icon) as TextView
         val bgRightIcon = itemView.findViewById(R.id.bg_right_icon) as TextView

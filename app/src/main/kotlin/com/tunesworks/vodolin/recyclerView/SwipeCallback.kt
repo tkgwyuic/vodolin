@@ -23,7 +23,7 @@ abstract class SwipeCallback: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
             viewHolder.apply {
 
-                itemBackground.x = cardView.paddingLeft - dX
+                itemBackground.x = -dX
                 if (dX > 0) { // On right swipe
                     itemBackground.setBackgroundResource(R.color.done)
                     bgLeftIcon.visibility  = View.VISIBLE
@@ -34,8 +34,6 @@ abstract class SwipeCallback: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.
                     bgRightIcon.visibility = View.VISIBLE
                 }
             }
-        } else {
-            viewHolder.itemBackground.setBackgroundColor(Color.TRANSPARENT)
         }
 
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
