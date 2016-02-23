@@ -36,6 +36,7 @@ enum class ItemColor(val color: Int) {
 }
 
 fun String.parseColor() = Color.parseColor(this)
+fun Array<ItemColor>.indexOfValue(value: String) = indexOf(ItemColor.valueOf(value))
 
 val ItemColor.primary: Int get() = color
 val ItemColor.primaryDark: Int get() = darken(0.2)

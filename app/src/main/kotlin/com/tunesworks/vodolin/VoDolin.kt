@@ -24,9 +24,10 @@ class VoDolin: Application() {
             super.setChanged()
         }
 
-        override fun addObserver(observer: Observer?) {
-            super.addObserver(observer)
-            Log.d(this.javaClass.name, "addObserver")
+        override fun notifyObservers(data: Any?) {
+            setChanged()
+            super.notifyObservers(data)
+            Log.d(this.javaClass.name, "notifyObservers")
         }
     }
 }

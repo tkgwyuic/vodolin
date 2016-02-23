@@ -12,4 +12,10 @@
     <dimen name="subheading">17sp</dimen>
     <dimen name="body">15sp</dimen>
     <dimen name="caption">13sp</dimen>
+
+    <dimen name="item_label">40dp</dimen>
+    <dimen name="item_label_icon">24dp</dimen>
+
+    <dimen name="large_item_label">90sp</dimen>
+    <dimen name="large_item_label_icon">54sp</dimen>
 </resources>

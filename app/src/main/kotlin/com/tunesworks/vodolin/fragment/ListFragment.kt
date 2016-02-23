@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ import com.tunesworks.vodolin.model.status
 import com.tunesworks.vodolin.recyclerView.SwipeCallback
 import com.tunesworks.vodolin.recyclerView.ToDoAdapter
 import com.tunesworks.vodolin.recyclerView.ToDoItemTouchHelper
+import com.tunesworks.vodolin.value.Ionicons
 import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.value.ToDoStatus
 import io.realm.Realm
@@ -46,7 +48,9 @@ class ListFragment: BaseFragment() {
 
     // Observer for update realmResults
     val observer = Observer { observable, data ->
-        if (data is ChangeToDoEvent && data.itemColorName == arguments.getString(KEY_ITEM_COLOR_NAME)) {
+        val itemColoName = arguments.getString(KEY_ITEM_COLOR_NAME)
+        if (data is ChangeToDoEvent && data.itemColorName == itemColoName) {
+            Log.d(this@ListFragment.javaClass.name, "Update: $itemColoName")
             todoAdapter.notifyDataSetChanged()
         }
     }
@@ -62,12 +66,12 @@ class ListFragment: BaseFragment() {
     var realmResults: RealmResults<ToDo> by Delegates.notNull<RealmResults<ToDo>>()
     var todoAdapter:  ToDoAdapter by Delegates.notNull<ToDoAdapter>()
     val handler = Handler()
-    var onItemselectionChangeListener: OnItemSelectionChangeListener? = null
+    var onItemSelectionChangeListener: OnItemSelectionChangeListener? = null
     var itemColor: ItemColor by Delegates.notNull<ItemColor>()
 
     override fun onAttach(context: Context?) {
         // Set listener
-        if (context is OnItemSelectionChangeListener) onItemselectionChangeListener = context
+        if (context is OnItemSelectionChangeListener) onItemSelectionChangeListener = context
 
         super.onAttach(context)
     }
@@ -95,13 +99,13 @@ class ListFragment: BaseFragment() {
         todoAdapter = ToDoAdapter(activity, realmResults, object : ToDoAdapter.ViewHolder.ItemListener {
             override fun onItemSelect(holder: ToDoAdapter.ViewHolder, position: Int) {
                 todoAdapter.toggleSelection(position)
-                onItemselectionChangeListener?.onItemSelectionChanged(todoAdapter.getSelectedItemCount(), itemColor)
+                onItemSelectionChangeListener?.onItemSelectionChanged(todoAdapter.getSelectedItemCount(), itemColor)
             }
 
             override fun onItemClick(holder: ToDoAdapter.ViewHolder, position: Int) {
                 if (todoAdapter.getSelectedItemCount() > 0) { // Selected some item
                     todoAdapter.toggleSelection(position)
-                    onItemselectionChangeListener?.onItemSelectionChanged(todoAdapter.getSelectedItemCount(), itemColor)
+                    onItemSelectionChangeListener?.onItemSelectionChanged(todoAdapter.getSelectedItemCount(), itemColor)
                 } else { // Not selected
                     // Start DetailActivity
                     DetailActivity.IntentBuilder

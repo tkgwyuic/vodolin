@@ -2,6 +2,7 @@ package com.tunesworks.vodolin.activity
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -9,13 +10,16 @@ import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.TabLayout
+import android.support.v4.view.ViewPager
 import android.support.v7.view.ActionMode
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
 import com.tunesworks.vodolin.fragment.ListFragment
@@ -29,6 +33,7 @@ import com.tunesworks.vodolin.value.primary
 import com.tunesworks.vodolin.value.primaryDark
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener {
     val REQUEST_CODE = 0
@@ -37,28 +42,46 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
     var actionMode: ActionMode? = null
     var isActionModeStarted = false
 
+    val observer = Observer { observable, event ->
+        if (event is RequestTabScrollEvent) {
+            view_pager.currentItem = ItemColor.values().indexOf(ItemColor.valueOf(event.itemColorName))
+        }
+    }
+    data class RequestTabScrollEvent(val itemColorName: String)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        VoDolin.observers.addObserver(observer)
+
         setSupportActionBar(toolbar)
         supportActionBar?.title = "ToDo List"
 
+        // Set AppBar background color
         appbar.setBackgroundColor(ItemColor.values()[0].color)
+
+        // Set Status bar color
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) window.statusBarColor = ItemColor.values()[0].color
 
+        // Set footer action listener
         footer_action.setOnClickListener { view ->
-            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                putExtra(RecognizerIntent.EXTRA_PROMPT, "Please Speech")
+            try {
+                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                    putExtra(RecognizerIntent.EXTRA_PROMPT, "Please Speech")
+                }
+                startActivityForResult(intent, REQUEST_CODE)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(this, "Error: Activity Not Found!", Toast.LENGTH_SHORT).show()
             }
-            startActivityForResult(intent, REQUEST_CODE)
-
+            // Hide modal shadow
             modal_shadow.performClick()
         }
 
         modal_shadow.setOnClickListener { coordinator.requestFocus() }
 
+        // Set footer
         footer_edit.apply {
             imeOptions = EditorInfo.IME_ACTION_DONE
 
@@ -73,9 +96,9 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE -> {
                         var content = textView.text.toString().trim { it == ' ' || it == '　' }
-                        if (content.length > 0) createToDo(content)
+                        if (content.length > 0) createToDo(content) // Create if not blank
 
-                        textView.text = ""
+                        textView.text = "" // Reset edit text
                         coordinator.requestFocus()
                         return@setOnEditorActionListener  true
                     }
@@ -84,23 +107,16 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
             }
         }
 
+        // Set ViewPager
         view_pager.apply {
             adapter = pagerAdapter
             offscreenPageLimit = 3
-        }
 
-        tabs.apply {
+            // Animation
             var prevItemColor = ItemColor.DEFAULT
-
-            setupWithViewPager(view_pager)
-
-            setOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                override fun onTabReselected(tab: TabLayout.Tab?) {}
-                override fun onTabUnselected(tab: TabLayout.Tab?) {}
-                override fun onTabSelected(tab: TabLayout.Tab?) {
-                    tab ?: return
-
-                    val itemColor = ItemColor.values()[tab.position]
+            addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+                override fun onPageSelected(position: Int) {
+                    val itemColor = ItemColor.values()[position]
 
                     // Animation toolbar background color
                     ValueAnimator.ofObject(ArgbEvaluator(), prevItemColor.primary, itemColor.primary).apply {
@@ -123,17 +139,20 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
                     // Save color
                     prevItemColor = itemColor
 
-                    // Scroll view pager
-                    view_pager.currentItem = tab.position
-
                     // Finish ActionMode
                     actionMode?.finish()
                 }
+                override fun onPageScrollStateChanged(state: Int) {}
+                override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             })
         }
+
+        // Set ViewPager
+        tabs.setupWithViewPager(view_pager)
     }
 
     override fun onDestroy() {
+        VoDolin.observers.deleteObserver(observer)
         super.onDestroy()
     }
 
@@ -154,7 +173,10 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if ((REQUEST_CODE == requestCode) && (RESULT_OK == resultCode)) {
             val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-            if (results != null) createToDo(results.first())
+            if (results != null) {
+                createToDo(results.first())
+                results.forEach { Log.d(this@MainActivity.javaClass.name, "Recognizer Result: $it") }
+            }
         }
         super.onActivityResult(requestCode, resultCode, data)
     }

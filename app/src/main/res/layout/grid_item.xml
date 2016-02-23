@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="90sp"
+    android:layout_height="90sp"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:gravity="center">
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="90sp"
+        android:layout_height="90sp"
+        android:textSize="@dimen/large_item_label_icon"
+        android:gravity="center"
+        tools:ignore="MissingPrefix"
+        fontPath="fonts/ionicons.ttf"/>
+</RelativeLayout>

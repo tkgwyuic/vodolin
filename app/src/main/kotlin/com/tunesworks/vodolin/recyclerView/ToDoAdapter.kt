@@ -90,13 +90,14 @@ class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: V
         init {
             itemView.setOnClickListener(this)
             itemView.setOnLongClickListener(this)
+            itemLabel.setOnClickListener(this)
         }
 
         override fun onClick(view: View?) {
             when (view?.id) {
-
+                itemLabel.id -> listener.onItemSelect(this, adapterPosition)
+                else -> listener.onItemClick(this, adapterPosition)
             }
-            listener.onItemClick(this, adapterPosition)
         }
 
         override fun onLongClick(view: View?): Boolean {

@@ -6,28 +6,32 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.widget.Toast
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
+import com.tunesworks.vodolin.fragment.ItemLabelDialog
 import com.tunesworks.vodolin.fragment.ListFragment
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.model.format
 import com.tunesworks.vodolin.model.ionicons
 import com.tunesworks.vodolin.model.itemColor
+import com.tunesworks.vodolin.value.Ionicons
+import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.value.primaryDark
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_detail.*
 import java.util.*
 import kotlin.properties.Delegates
 
-class DetailActivity: BaseActivity() {
+class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener {
     companion object {
         val KEY_UUID = "KEY_UUID"
     }
 
     var todo: ToDo by Delegates.notNull<ToDo>()
     var realm: Realm by Delegates.notNull<Realm>()
-    var isEdited = false
+    var prevItemColorName: String by Delegates.notNull<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +46,9 @@ class DetailActivity: BaseActivity() {
         // Set realm object
         todo = realm.where(ToDo::class.java)
                 .equalTo(ToDo::uuid.name, intent.getStringExtra(KEY_UUID) ?: "")
-                .findFirst() ?: return finishWithToast("ToDo Not Found...")
+                .findFirst() ?: return finishWithToast("Error: ToDo not found")
+
+        prevItemColorName = todo.itemColorName
 
         // Toolbar
         setSupportActionBar(toolbar)
@@ -67,12 +73,16 @@ class DetailActivity: BaseActivity() {
 
                 // Notify
                 VoDolin.observers.apply {
-                    setChanged()
                     notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
+
+                    if (todo.itemColorName != prevItemColorName) {
+                        notifyObservers(ListFragment.ChangeToDoEvent(prevItemColorName))
+                        notifyObservers(MainActivity.RequestTabScrollEvent(todo.itemColorName))
+                    }
                 }
 
-                finishWithToast("Modified.")
-            } else finishWithToast("Error! Not modified.") // Realm is not in transaction
+                finishWithToast("Modified")
+            } else finishWithToast("Error! Not modified") // Realm is not in transaction
         }
 
         // On delete icon click
@@ -92,12 +102,11 @@ class DetailActivity: BaseActivity() {
 
                             // Notify
                             VoDolin.observers.apply {
-                                setChanged()
                                 notifyObservers(ListFragment.ChangeToDoEvent(itemColorName))
                             }
 
                             finishWithToast("Deleted.")
-                        } else finishWithToast("Error! Not deleted.") // Realm is not in transaction
+                        } else finishWithToast("Error! Not deleted") // Realm is not in transaction
                     })
                     .setNegativeButton("Cancel", null)
                     .show()
@@ -114,6 +123,10 @@ class DetailActivity: BaseActivity() {
                 setColor(todo.itemColor.color)
                 setShape(GradientDrawable.OVAL)
             }
+
+            setOnClickListener {
+                ItemLabelDialog().show(supportFragmentManager, "ItemLabel")
+            }
         }
 
         // Created at & Updated at
@@ -129,8 +142,9 @@ class DetailActivity: BaseActivity() {
     }
 
     override fun onBackPressed() {
-        if (todo.content != content.text.toString().trim { it == ' ' || it == '　' }
-                || todo.memo != memo.text.toString().trim { it == ' ' || it == '　' }) {
+        if (todo.content != content.text.toString().trim { it == ' ' || it == '　' } ||
+                todo.memo != memo.text.toString().trim { it == ' ' || it == '　' } ||
+                todo.itemColorName != prevItemColorName) {
             // Show confirm dialog
             AlertDialog.Builder(this)
                     .setTitle("Warning!")
@@ -144,6 +158,20 @@ class DetailActivity: BaseActivity() {
         } else {
             if (realm.isInTransaction) realm.cancelTransaction()
             super.onBackPressed()
+        }
+    }
+
+    override fun onItemLabelSet(itemColor: ItemColor, ionicons: Ionicons) {
+        todo.itemColor = itemColor
+        todo.ionicons  = ionicons
+
+        // Set item label icon and color
+        item_label.apply {
+            text       = todo.ionicons.icon
+            background = GradientDrawable().apply {
+                setColor(todo.itemColor.color)
+                setShape(GradientDrawable.OVAL)
+            }
         }
     }
 
