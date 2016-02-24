@@ -10,8 +10,6 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
-import android.support.v7.widget.Toolbar
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -30,11 +28,13 @@ import com.tunesworks.vodolin.value.Ionicons
 import com.tunesworks.vodolin.value.ItemColor
 import com.tunesworks.vodolin.value.primaryDark
 import io.realm.Realm
+import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.activity_detail.*
 import java.util.*
 import kotlin.properties.Delegates
 
-class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener,
+class DetailActivity: BaseActivity(),
+        ItemLabelDialog.OnItemLabelSetListener,
         DatePickerDialog.OnDateSetListener,
         TimePickerDialog.OnTimeSetListener{
     companion object {
@@ -45,7 +45,8 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener,
     var realm: Realm by Delegates.notNull<Realm>()
     var prevItemColorName: String by Delegates.notNull<String>()
 
-    var date: Date by Delegates.notNull<Date>()
+    var prevDeadline: Date? = null
+    //var date: Date? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +65,7 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener,
 
         // Save item color name
         prevItemColorName = todo.itemColorName
+        prevDeadline = todo.deadline
 
         // Set Toolbar
         setSupportActionBar(toolbar)
@@ -93,62 +95,52 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener,
             setOnClickListener { ItemLabelDialog().show(supportFragmentManager, "ItemLabel") }
         }
 
-        switch_notify.apply {
-            val bid = todo.createdAt.time.toInt()
-            val am = getSystemService(ALARM_SERVICE) as AlarmManager
+        // Switch notification
+        switch_notify.isChecked = todo.isNotify
+        if (todo.deadline == null) switch_notify_container.visibility = View.GONE
 
-            setOnCheckedChangeListener { button, isChecked ->
-                if (isChecked) {
-                    //val calendar = Calendar.getInstance()
-                    //calendar.timeInMillis = System.currentTimeMillis()
-                    var deadlineMillis = todo.deadline?.time ?: Date().time
 
-                    val intent = AlarmBroadcastReceiver.IntentBuilder(applicationContext)
-                            .setBID(bid)
-                            .setUUID(todo.uuid)
-                            .setTitle(todo.content)
-                            .setWhen(deadlineMillis)
-                            .setTicker(todo.content)
-                            .build()
 
-                    val pending = PendingIntent.getBroadcast(applicationContext, bid, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                        am.setExact(AlarmManager.RTC_WAKEUP, deadlineMillis, pending)
-                    } else {
-                        am.set(AlarmManager.RTC_WAKEUP, deadlineMillis, pending)
-                    }
-
-                    Toast.makeText(applicationContext, "Set Alarm ", Toast.LENGTH_SHORT).show()
-                } else {
-                    val intent  = Intent(applicationContext, AlarmBroadcastReceiver::class.java)
-                    val pending = PendingIntent.getBroadcast(applicationContext, bid, intent, 0)
-
-                    am.cancel(pending)
-                }
-            }
-        }
-
-        date = todo.deadline ?: Date()
-        var year   = date.format("yyyy").toInt()
-        var month  = date.format("MM").toInt()
-        var day    = date.format("dd").toInt()
-        var hour   = date.format("HH").toInt()
-        var minute = date.format("mm").toInt()
-
+        // Deadline date
         deadline_date.apply {
             text = todo.deadline?.format("yyyy/MM/dd (E)") ?: "Tap to set deadline."
             setOnClickListener {
-                DatePickerDialogFragment(year, month, day)
+                var date = todo.deadline ?: Date()
+                var year   = date.format("yyyy").toInt()
+                var month  = date.format("MM").toInt()
+                var day    = date.format("dd").toInt()
+                DatePickerDialogFragment(year, month-1, day)
                         .show(supportFragmentManager, "Date Picker")
             }
         }
 
+        // Deadline time
         deadline_time.apply {
-            if (todo.deadline == null)visibility = View.GONE
+            if (todo.deadline == null) visibility = View.GONE
+            else text = todo.deadline?.format("HH:mm")
             setOnClickListener {
+                var date = todo.deadline ?: Date()
+                var hour   = date.format("HH").toInt()
+                var minute = date.format("mm").toInt()
                 TimePickerDialogFragment(hour, minute)
                         .show(supportFragmentManager, "Time Picker")
+            }
+        }
+
+        // Deadline delete button
+        deadline_delete.apply {
+            if (todo.deadline == null) visibility = View.GONE
+            setOnClickListener {
+                todo.deadline = null
+
+                deadline_date.text = "Tap to set deadline."
+                deadline_time.visibility = View.GONE
+
+                switch_notify.isClickable = false
+                switch_notify_container.visibility = View.GONE
+
+                // Hide delete button
+                visibility = View.GONE
             }
         }
 
@@ -161,6 +153,7 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener,
         // Close Realm
         if (realm.isInTransaction) realm.cancelTransaction()
         if (!realm.isClosed) realm.close()
+
         super.onDestroy()
     }
 
@@ -181,6 +174,15 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener,
                     todo.updatedAt = Date()
                     todo.content   = content.text.toString()
                     todo.memo      = memo.text.toString()
+
+                    // Alarm
+                    val bid = todo.createdAt.time.toInt()
+                    if (switch_notify.isChecked && todo.deadline != prevDeadline) {
+                        if (todo.isNotify) cancelAlarm(bid)
+                        setAlarm(bid)
+                    } else cancelAlarm(bid)
+
+                    todo.isNotify = switch_notify.isChecked
 
                     // Commit
                     realm.commitTransaction()
@@ -234,7 +236,9 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener,
         // Check values changes
         if (todo.content != content.text.toString().trim { it == ' ' || it == '　' } ||
                 todo.memo != memo.text.toString().trim { it == ' ' || it == '　' } ||
-                todo.itemColorName != prevItemColorName) {
+                todo.itemColorName != prevItemColorName ||
+                todo.deadline != prevDeadline ||
+                switch_notify.isChecked != todo.isNotify) {
 
             // Show confirm dialog
             AlertDialog.Builder(this)
@@ -268,30 +272,68 @@ class DetailActivity: BaseActivity(), ItemLabelDialog.OnItemLabelSetListener,
     }
 
     override fun onDateSet(view: DatePicker?, year: Int, monthOfYear: Int, dayOfMonth: Int) {
-        var y  = year.format("%02d")
-        var m  = (monthOfYear+1).format("%02d")
-        var d  = dayOfMonth.format("%02d")
-        date = "$y $m $d ${date.format("HH")} ${date.format("mm")}".parseDate("yyyy MM dd HH mm")
+        var date     = todo.deadline ?: Date()
+        val month    = (monthOfYear+1).format("%02d")
+        val day      = dayOfMonth.format("%02d")
+        val hour     = date.intHour().format("%02d")
+        val minute   = date.intMinute().format("%02d")
+        date = "$year $month $day $hour $minute".parseDate("yyyy MM dd HH mm")
 
         todo.deadline = date
-        deadline_date.text = todo.deadline?.format("yyyy/MM/dd (E)")
-        deadline_time.text = todo.deadline?.format("HH:mm")
+
+        deadline_date.text = date.format("yyyy/MM/dd (E)")
+        deadline_time.text = date.format("HH:mm")
+        deadline_delete.visibility = View.VISIBLE
         deadline_time.visibility = View.VISIBLE
+        switch_notify_container.visibility = View.VISIBLE
     }
 
     override fun onTimeSet(view: TimePicker?, hour: Int, minute: Int) {
+        var date = todo.deadline ?: Date()
         var h = hour.format("%02d")
         var m = minute.format("%02d")
         date = "${date.format("yyyy")} ${date.format("MM")} ${date.format("dd")} $h $m".parseDate("yyyy MM dd HH mm")
 
         todo.deadline = date
-        deadline_time.text = todo.deadline?.format("HH:mm")
-
+        deadline_time.text = date.format("HH:mm")
     }
 
     private fun finishWithToast(msg: String) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         finish()
+    }
+
+    private fun setAlarm(bid: Int) {
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+
+        // Deadline to Milli seconds
+        val deadlineMillis = todo.deadline?.time ?: Date().time
+
+        // Create Intent
+        val intent = AlarmBroadcastReceiver.IntentBuilder(applicationContext)
+                .setBID(bid)
+                .setUUID(todo.uuid)
+                .setTitle(todo.content)
+                .setWhen(deadlineMillis)
+                .setTicker(todo.content)
+                .build()
+
+        // Create PendingIntent
+        val pending = PendingIntent.getBroadcast(applicationContext, bid, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        // Set alarm
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) alarmManager.setExact(AlarmManager.RTC_WAKEUP, deadlineMillis, pending)
+        else alarmManager.set(AlarmManager.RTC_WAKEUP, deadlineMillis, pending)
+    }
+
+    private fun cancelAlarm(bid: Int) {
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+
+        val intent  = Intent(applicationContext, AlarmBroadcastReceiver::class.java)
+        val pending = PendingIntent.getBroadcast(applicationContext, bid, intent, 0)
+
+        // Cancel alarm
+        alarmManager.cancel(pending)
     }
 
     open class IntentBuilder(val context: Context) {

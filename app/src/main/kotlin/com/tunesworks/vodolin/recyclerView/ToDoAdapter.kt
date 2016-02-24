@@ -62,6 +62,18 @@ class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: V
                     itemLabel.setText(R.string.icon_done)
                 }
             }
+
+            // Set item action
+            if (todo.deadline != null) {
+                itemAction.apply{
+                    visibility = View.VISIBLE
+                    if (todo.isNotify) setText(R.string.icon_notification_on)
+                    else setText(R.string.icon_notification_off)
+                }
+
+            } else {
+                itemAction.visibility = View.GONE
+            }
         }
     }
 
@@ -85,6 +97,7 @@ class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: V
         val itemForeground = itemView.findViewById(R.id.item_foreground) as RelativeLayout
         val bgLeftIcon = itemView.findViewById(R.id.bg_left_icon) as TextView
         val bgRightIcon = itemView.findViewById(R.id.bg_right_icon) as TextView
+        val itemAction = itemView.findViewById(R.id.item_action) as TextView
 
         init {
             itemView.setOnClickListener(this)

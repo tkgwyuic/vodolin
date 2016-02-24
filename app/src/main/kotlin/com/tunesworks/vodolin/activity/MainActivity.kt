@@ -173,7 +173,10 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_settings -> return true
+            R.id.search -> {
+                SearchActivity.IntentBuilder(this).start()
+                return true
+            }
         }
 
         return super.onOptionsItemSelected(item)

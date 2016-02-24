@@ -22,43 +22,6 @@
         android:background="#FFF"
         app:layout_scrollFlags="scroll|enterAlways"
         app:popupTheme="@style/AppTheme.PopupOverlay">
-        <!--<TextView-->
-            <!--android:id="@+id/close"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="left|center"-->
-            <!--fontPath="fonts/ionicons.ttf"-->
-            <!--tools:ignore="MissingPrefix"-->
-            <!--android:text="@string/icon_close"-->
-            <!--android:textSize="@dimen/icon_size"-->
-            <!--android:padding="8dp"-->
-            <!--android:background="?android:attr/selectableItemBackground"/>-->
-        <!--<TextView-->
-            <!--android:id="@+id/done"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="right|center"-->
-            <!--android:textColor="@color/done"-->
-            <!--fontPath="fonts/ionicons.ttf"-->
-            <!--tools:ignore="MissingPrefix"-->
-            <!--android:text="@string/icon_done"-->
-            <!--android:textSize="@dimen/icon_size"-->
-            <!--android:padding="8dp"-->
-            <!--android:layout_margin="8dp"-->
-            <!--android:background="?android:attr/selectableItemBackground"/>-->
-        <!--<TextView-->
-            <!--android:id="@+id/delete"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="right|center"-->
-            <!--android:textColor="@color/delete"-->
-            <!--fontPath="fonts/ionicons.ttf"-->
-            <!--tools:ignore="MissingPrefix"-->
-            <!--android:text="@string/icon_delete"-->
-            <!--android:textSize="@dimen/icon_size"-->
-            <!--android:padding="8dp"-->
-            <!--android:layout_margin="8dp"-->
-            <!--android:background="?android:attr/selectableItemBackground"/>-->
     </android.support.v7.widget.Toolbar>
 
     <android.support.v4.widget.NestedScrollView
@@ -154,8 +117,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp">
+                android:paddingLeft="4dp">
                 <TextView
                     android:id="@+id/deadline_label"
                     android:layout_width="wrap_content"
@@ -176,41 +138,70 @@
                     android:textSize="18dp"
                     android:textColor="@color/secondary_text"
                     android:text="YYYY/MM/DD"
-                    android:clickable="true"/>
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackground"/>
                 <TextView
                     android:id="@+id/deadline_time"
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_centerInParent="true"
-                    android:layout_alignParentRight="true"
+                    android:layout_toLeftOf="@+id/deadline_delete"
                     android:gravity="center_vertical"
                     android:textSize="18dp"
                     android:textColor="@color/secondary_text"
                     android:text="HH:MM"
-                    android:clickable="true"/>
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackground"/>
 
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="16dp">
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/label_text"
+                    android:id="@+id/deadline_delete"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentRight="true"
+                    android:textSize="@dimen/icon_size"
+                    android:gravity="center"
+                    android:layout_marginLeft="8dp"
+                    android:text="@string/icon_close"
                     android:textColor="@color/hint_text"
-                    android:layout_centerInParent="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_margin="4dp"
-                    android:text="Notify"/>
-                <Switch
-                    android:id="@+id/switch_notify"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:layout_alignParentRight="true"/>
+                    tools:ignore="MissingPrefix"
+                    fontPath="fonts/ionicons.ttf"
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackground"/>
             </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/switch_notify_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include layout="@layout/divider"/>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/label_text"
+                        android:textColor="@color/hint_text"
+                        android:layout_centerInParent="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_margin="4dp"
+                        android:text="Notification"/>
+                    <Switch
+                        android:id="@+id/switch_notify"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:layout_alignParentRight="true"/>
+                </RelativeLayout>
+
+            </LinearLayout>
+
 
             <include layout="@layout/divider"/>
 

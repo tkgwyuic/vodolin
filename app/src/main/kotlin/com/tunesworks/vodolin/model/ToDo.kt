@@ -19,6 +19,7 @@ open class ToDo(
         open var statusName:    String = ToDoStatus.INCOMPLETE.toString(),
         open var itemColorName: String = ItemColor.DEFAULT.toString(),
         open var ioniconsName:  String = Ionicons.DEFAULT.toString(),
+        open var isNotify:      Boolean = false,
         open var deadline:      Date?  = null,
         open var createdAt:     Date   = Date(),
         open var updatedAt:     Date   = Date()
@@ -36,6 +37,12 @@ var ToDo.status: ToDoStatus
         get() = ToDoStatus.valueOf(statusName)
         set(value) { statusName = value.toString() }
 
-fun Date.format(fmt: String = "yyyy/MM/dd(E) kk:mm") = DateFormat.format(fmt, this).toString()
-fun Int.format(fmt: String) = java.lang.String.format(fmt, this)
-fun String.parseDate(fmt: String) = SimpleDateFormat(fmt).parse(this)
+fun Date.format(fmt: String = "yyyy/MM/dd(E) kk:mm"): String = DateFormat.format(fmt, this).toString()
+fun Date.intYear():   Int = format("yyyy").toInt()
+fun Date.intMonth():  Int = format("MM").toInt()
+fun Date.intDay():    Int = format("dd").toInt()
+fun Date.intHour():   Int = format("kk").toInt()
+fun Date.intMinute(): Int = format("mm").toInt()
+
+fun Int.format(fmt: String): String = java.lang.String.format(fmt, this)
+fun String.parseDate(fmt: String): Date = SimpleDateFormat(fmt).apply { timeZone = TimeZone.getDefault() }.parse(this)

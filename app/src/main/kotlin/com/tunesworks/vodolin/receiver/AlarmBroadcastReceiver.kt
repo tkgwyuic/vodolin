@@ -1,11 +1,15 @@
 package com.tunesworks.vodolin.receiver
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.support.v4.app.NotificationManagerCompat
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.app.NotificationCompat
+import android.util.Log
 import android.widget.Toast
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.activity.DetailActivity
@@ -24,10 +28,23 @@ class AlarmBroadcastReceiver: BroadcastReceiver() {
         val EXTRA_TICKER  = "EXTRA_TICKER"
 
         val GROUP_KEY = "Deadline Notification"
+
+        fun setAlarm(alarmManager: AlarmManager, pending: PendingIntent, timeMillis: Long) {
+            // Set alarm
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeMillis, pending)
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, timeMillis, pending)
+            }
+        }
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d(this.javaClass.name, "onReceive")
         context ?: return
+        Log.d(this.javaClass.name, "onReceive Start")
+
+
         val uuid = intent?.getStringExtra(EXTRA_UUID) ?: ""
         val bid  = intent?.getIntExtra(EXTRA_BID, 0) ?: 0
         val mainIntent = MainActivity.IntentBuilder(context).setUUID(uuid).build()

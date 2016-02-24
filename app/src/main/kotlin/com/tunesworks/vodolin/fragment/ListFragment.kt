@@ -95,6 +95,7 @@ class ListFragment: BaseFragment() {
                 .equalTo(ToDo::statusName.name, ToDoStatus.INCOMPLETE.toString())
                 .findAllSorted(ToDo::createdAt.name, Sort.DESCENDING)
 
+
         // Create recycler view adapter
         todoAdapter = ToDoAdapter(activity, realmResults, object : ToDoAdapter.ViewHolder.ItemListener {
             override fun onItemSelect(holder: ToDoAdapter.ViewHolder, position: Int) {
