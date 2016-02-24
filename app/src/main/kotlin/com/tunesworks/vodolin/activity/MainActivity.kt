@@ -36,7 +36,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener {
+    companion object {
+        val EXTRA_UUID = "EXTRA_UUID"
+    }
     val REQUEST_CODE = 0
+
 
     val pagerAdapter by lazy { PagerAdapter(supportFragmentManager) }
     var actionMode: ActionMode? = null
@@ -50,6 +54,11 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
     data class RequestTabScrollEvent(val itemColorName: String)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val uuid = intent.getStringExtra(EXTRA_UUID)
+        if (uuid != null) {
+            DetailActivity.IntentBuilder(this).setUUID(uuid).start()
+        }
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -183,7 +192,7 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
 
     override fun onBackPressed() {
         if (footer_edit.isFocused) finishInputMode()
-        else super.onBackPressed()
+        else finish()
     }
 
     override fun getSnackbarContainer(): CoordinatorLayout? {
@@ -209,7 +218,6 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
         makeSnackbar("Create new ToDo!")?.apply {
             setActionTextColor(todo.itemColor.primary)
             setAction("EDIT", {
-                // ToDo: start edit activity
                 DetailActivity.IntentBuilder.from(this@MainActivity).setUUID(todo.uuid).start()
             })
             show()
@@ -278,5 +286,17 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
         } else { // Not selected
             actionMode?.finish()
         }
+    }
+
+    open class IntentBuilder(val context: Context) {
+        val intent = Intent(context, MainActivity::class.java)
+
+        fun setUUID(uuid: String): IntentBuilder {
+            intent.putExtra(EXTRA_UUID, uuid)
+            return this
+        }
+
+        fun build() = intent
+        fun start() { context.startActivity(intent) }
     }
 }

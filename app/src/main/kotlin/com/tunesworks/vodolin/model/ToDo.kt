@@ -36,4 +36,6 @@ var ToDo.status: ToDoStatus
         get() = ToDoStatus.valueOf(statusName)
         set(value) { statusName = value.toString() }
 
-fun Date.format(fmt: String = "yyyy/MM/dd(E) kk:mm") = DateFormat.format(fmt, this)
+fun Date.format(fmt: String = "yyyy/MM/dd(E) kk:mm") = DateFormat.format(fmt, this).toString()
+fun Int.format(fmt: String) = java.lang.String.format(fmt, this)
+fun String.parseDate(fmt: String) = SimpleDateFormat(fmt).parse(this)

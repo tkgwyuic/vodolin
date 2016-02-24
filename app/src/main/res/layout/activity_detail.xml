@@ -136,7 +136,6 @@
                     android:id="@+id/text_input_memo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-
                     <EditText
                         android:id="@+id/memo"
                         android:layout_width="match_parent"
@@ -148,6 +147,70 @@
 
                 </android.support.design.widget.TextInputLayout>
             </LinearLayout>
+
+            <include layout="@layout/divider"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp">
+                <TextView
+                    android:id="@+id/deadline_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/label_text"
+                    android:textColor="@color/hint_text"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentLeft="true"
+                    android:text="Deadline"
+                    android:layout_marginRight="16dp"/>
+                <TextView
+                    android:id="@+id/deadline_date"
+                    android:layout_toRightOf="@+id/deadline_label"
+                    android:layout_centerInParent="true"
+                    android:gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:textSize="18dp"
+                    android:textColor="@color/secondary_text"
+                    android:text="YYYY/MM/DD"
+                    android:clickable="true"/>
+                <TextView
+                    android:id="@+id/deadline_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center_vertical"
+                    android:textSize="18dp"
+                    android:textColor="@color/secondary_text"
+                    android:text="HH:MM"
+                    android:clickable="true"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/label_text"
+                    android:textColor="@color/hint_text"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_margin="4dp"
+                    android:text="Notify"/>
+                <Switch
+                    android:id="@+id/switch_notify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentRight="true"/>
+            </RelativeLayout>
 
             <include layout="@layout/divider"/>
 
