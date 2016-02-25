@@ -27,17 +27,23 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
+
     compile 'com.android.support:appcompat-v7:23.1.1'
+
+    // UI
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
+    compile 'com.android.support:cardview-v7:23.1.1'
+
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
     // Realm
-    compile 'io.realm:realm-android:0.87.4'
-    kapt 'io.realm:realm-android:0.87.4'
+    compile 'io.realm:realm-android:0.87.5'
+    kapt 'io.realm:realm-android:0.87.5'
+
     // Font
     compile 'uk.co.chrisjenx:calligraphy:2.1.0'
-    compile 'com.android.support:cardview-v7:23.1.1'
 }
 buildscript {
     ext.kotlin_version = '1.0.0'

@@ -3,6 +3,7 @@ package com.tunesworks.vodolin.activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.support.v7.widget.LinearLayoutManager
@@ -11,7 +12,9 @@ import android.util.Log
 import android.view.Menu
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.model.ToDo
+import com.tunesworks.vodolin.model.itemColor
 import com.tunesworks.vodolin.recyclerView.ToDoAdapter
+import com.tunesworks.vodolin.value.primaryDark
 import io.realm.Case
 import io.realm.Realm
 import io.realm.RealmResults
@@ -27,7 +30,7 @@ class SearchActivity: BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
-
+        
         realm        = Realm.getInstance(this)
         realmResults = realm.where(ToDo::class.java)
                 .findAllSorted(ToDo::createdAt.name, Sort.DESCENDING)
@@ -37,7 +40,11 @@ class SearchActivity: BaseActivity() {
             inflateMenu(R.menu.search)
             setNavigationIcon(R.drawable.ic_arrow_back_white_24dp)
             setNavigationOnClickListener { onBackPressed() }
+            setBackgroundColor(Color.GRAY)
         }
+        // Set StatusBar color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) window.statusBarColor = Color.DKGRAY
+
 
         val searchView = toolbar.menu.findItem(R.id.search).actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
