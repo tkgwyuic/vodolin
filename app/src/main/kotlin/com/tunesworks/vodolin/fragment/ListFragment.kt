@@ -20,6 +20,7 @@ import com.tunesworks.vodolin.activity.DetailActivity
 import com.tunesworks.vodolin.event.ItemSelectionChangeEvent
 import com.tunesworks.vodolin.event.ToDoEvent
 import com.tunesworks.vodolin.model.ToDo
+import com.tunesworks.vodolin.model.itemColor
 import com.tunesworks.vodolin.model.status
 import com.tunesworks.vodolin.recyclerView.SwipeCallback
 import com.tunesworks.vodolin.recyclerView.ToDoAdapter
@@ -50,6 +51,18 @@ class ListFragment: BaseFragment() {
     // Subscriber
     @Subscribe fun changeAllToDo(event: ToDoEvent.ChangeAll) {
         if (event.itemColorname == itemColor.toString()) todoAdapter.notifyDataSetChanged()
+    }
+    @Subscribe fun updateToDo(event: ToDoEvent.Update) {
+        if (event.todo.itemColor == itemColor) {
+            realmResults.forEachIndexed { i, todo ->
+                if (todo.uuid == event.todo.uuid) {
+                    todoAdapter.notifyItemChanged(i)
+                    return
+                }
+            }
+
+            todoAdapter.notifyDataSetChanged()
+        }
     }
 
     var realm:        Realm by Delegates.notNull<Realm>()

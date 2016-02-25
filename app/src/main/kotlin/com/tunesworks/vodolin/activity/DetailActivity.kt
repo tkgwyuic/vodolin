@@ -44,6 +44,7 @@ class DetailActivity: BaseActivity(),
     }
 
     var todo: ToDo by Delegates.notNull<ToDo>()
+    var oldTodo: ToDo by Delegates.notNull<ToDo>()
     var realm: Realm by Delegates.notNull<Realm>()
     var prevItemColorName: String by Delegates.notNull<String>()
 
@@ -191,10 +192,18 @@ class DetailActivity: BaseActivity(),
 
                     // Publishing
                     VoDolin.bus.apply {
-                        post(ToDoEvent.ChangeAll(todo.itemColorName))
+                        //post(ToDoEvent.ChangeAll(todo.itemColorName))
+                        post(ToDoEvent.Update(todo))
                         if (todo.itemColorName != prevItemColorName) { // If color changed
-                            post(ToDoEvent.ChangeAll(prevItemColorName))
+                            //post(ToDoEvent.ChangeAll(prevItemColorName))
+                            post(ToDoEvent.Move(todo, prevItemColorName))
                             post(RequestTabScrollEvent(todo.itemColorName))
+                        }
+
+                        if (todo.itemColorName == prevItemColorName) {
+                            post(ToDoEvent.Update(todo))
+                        } else {
+
                         }
                     }
 
