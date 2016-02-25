@@ -18,6 +18,8 @@ import android.widget.TimePicker
 import android.widget.Toast
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
+import com.tunesworks.vodolin.event.RequestTabScrollEvent
+import com.tunesworks.vodolin.event.ToDoEvent
 import com.tunesworks.vodolin.fragment.DatePickerDialogFragment
 import com.tunesworks.vodolin.fragment.ItemLabelDialog
 import com.tunesworks.vodolin.fragment.ListFragment
@@ -150,11 +152,11 @@ class DetailActivity: BaseActivity(),
     }
 
     override fun onDestroy() {
+        super.onDestroy()
+
         // Close Realm
         if (realm.isInTransaction) realm.cancelTransaction()
         if (!realm.isClosed) realm.close()
-
-        super.onDestroy()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -187,15 +189,16 @@ class DetailActivity: BaseActivity(),
                     // Commit
                     realm.commitTransaction()
 
-                    // Notify
-                    VoDolin.observers.apply {
-                        notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
-
-                        if (todo.itemColorName != prevItemColorName) {
-                            notifyObservers(ListFragment.ChangeToDoEvent(prevItemColorName))
-                            notifyObservers(MainActivity.RequestTabScrollEvent(todo.itemColorName))
+                    // Publishing
+                    VoDolin.bus.apply {
+                        post(ToDoEvent.ChangeAll(todo.itemColorName))
+                        if (todo.itemColorName != prevItemColorName) { // If color changed
+                            post(ToDoEvent.ChangeAll(prevItemColorName))
+                            post(RequestTabScrollEvent(todo.itemColorName))
                         }
                     }
+
+
 
                     finishWithToast("Modified")
                 } else finishWithToast("Error! Not modified") // Realm is not in transaction
@@ -217,9 +220,10 @@ class DetailActivity: BaseActivity(),
                                 realm.commitTransaction()
 
                                 // Notify
-                                VoDolin.observers.apply {
-                                    notifyObservers(ListFragment.ChangeToDoEvent(itemColorName))
-                                }
+//                                VoDolin.observers.apply {
+//                                    notifyObservers(ListFragment.ChangeToDoEvent(itemColorName))
+//                                }
+                                VoDolin.bus.post(ToDoEvent.ChangeAll(itemColorName))
 
                                 finishWithToast("Deleted.")
                             } else finishWithToast("Error! Not deleted") // Realm is not in transaction

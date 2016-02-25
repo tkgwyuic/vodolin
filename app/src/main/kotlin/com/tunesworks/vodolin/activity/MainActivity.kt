@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.support.design.widget.CoordinatorLayout
-import android.support.design.widget.TabLayout
 import android.support.v4.view.ViewPager
 import android.support.v7.view.ActionMode
 import android.util.Log
@@ -20,8 +19,12 @@ import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import com.squareup.otto.Subscribe
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.VoDolin
+import com.tunesworks.vodolin.event.ItemSelectionChangeEvent
+import com.tunesworks.vodolin.event.RequestTabScrollEvent
+import com.tunesworks.vodolin.event.ToDoEvent
 import com.tunesworks.vodolin.fragment.ListFragment
 import com.tunesworks.vodolin.fragment.PagerAdapter
 import com.tunesworks.vodolin.model.ToDo
@@ -33,9 +36,8 @@ import com.tunesworks.vodolin.value.primary
 import com.tunesworks.vodolin.value.primaryDark
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 
-class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener {
+class MainActivity : BaseActivity() {
     companion object {
         val EXTRA_UUID = "EXTRA_UUID"
     }
@@ -46,32 +48,38 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
     var actionMode: ActionMode? = null
     var isActionModeStarted = false
 
-    val observer = Observer { observable, event ->
-        if (event is RequestTabScrollEvent) {
-            view_pager.currentItem = ItemColor.values().indexOf(ItemColor.valueOf(event.itemColorName))
-        }
+    // Subscribing
+    @Subscribe fun tabScroll(event: RequestTabScrollEvent) {
+        view_pager.currentItem = ItemColor.values().indexOf(ItemColor.valueOf(event.itemColorName))
     }
-    data class RequestTabScrollEvent(val itemColorName: String)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val uuid = intent.getStringExtra(EXTRA_UUID)
-        if (uuid != null) {
-            DetailActivity.IntentBuilder(this).setUUID(uuid).start()
-        }
+        if (uuid != null) DetailActivity.IntentBuilder(this).setUUID(uuid).start()
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        VoDolin.observers.addObserver(observer)
+        // Register EventBus
+        VoDolin.bus.register(this)
 
-        setSupportActionBar(toolbar)
-        supportActionBar?.title = "ToDo List"
+        // Set Toolbar
+        toolbar.apply {
+            title = "ToDo List"
+            inflateMenu(R.menu.menu_main)
+
+            // Set listener
+            setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.search -> SearchActivity.IntentBuilder(this@MainActivity).start()
+                    else -> return@setOnMenuItemClickListener false
+                }
+                true
+            }
+        }
 
         // Set AppBar background color
         appbar.setBackgroundColor(ItemColor.values()[0].color)
-
-        // Set Status bar color
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) window.statusBarColor = ItemColor.values()[0].color
 
         // Set footer action listener
         footer_action.setOnClickListener { view ->
@@ -85,10 +93,11 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
                 Toast.makeText(this, "Error: Activity Not Found!", Toast.LENGTH_SHORT).show()
             }
             // Hide modal shadow
-            modal_shadow.performClick()
+            footer_edit.clearFocus()
         }
 
-        modal_shadow.setOnClickListener { coordinator.requestFocus() }
+        //
+        modal_shadow.setOnClickListener { finishInputMode() }
 
         // Set footer
         footer_edit.apply {
@@ -108,7 +117,7 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
                         if (content.length > 0) createToDo(content) // Create if not blank
 
                         textView.text = "" // Reset edit text
-                        coordinator.requestFocus()
+                        footer_edit.clearFocus() // Clear focus
                         return@setOnEditorActionListener  true
                     }
                 }
@@ -161,8 +170,10 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
     }
 
     override fun onDestroy() {
-        VoDolin.observers.deleteObserver(observer)
         super.onDestroy()
+
+        // Unregister EventBus
+        VoDolin.bus.unregister(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -213,10 +224,7 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
             realm.executeTransaction { realm.copyToRealm(todo) }
         }
 
-        VoDolin.observers.apply {
-            setChanged()
-            notifyObservers(ListFragment.ChangeToDoEvent(todo.itemColorName))
-        }
+        VoDolin.bus.post(ToDoEvent.ChangeAll(todo.itemColorName))
 
         makeSnackbar("Create new ToDo!")?.apply {
             setActionTextColor(todo.itemColor.primary)
@@ -234,7 +242,6 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
 
     fun finishInputMode() {
         // Clear focus
-        //coordinator.requestFocus()
         footer_edit.clearFocus()
 
         // Hide keyboard
@@ -244,7 +251,9 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
         modal_shadow.visibility = View.GONE
     }
 
-    override fun onItemSelectionChanged(selectedItemCount: Int, itemColor: ItemColor) {
+    @Subscribe fun itemSelectionChanged(event: ItemSelectionChangeEvent) {
+        val selectedItemCount = event.selectedItemCount
+        val itemColor = event.itemColor
         if (selectedItemCount > 0) { // Selected item
             if (!isActionModeStarted) {
                 actionMode = startSupportActionMode( object : ActionMode.Callback {
@@ -285,6 +294,48 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
             actionMode?.finish()
         }
     }
+
+//    override fun onItemSelectionChanged(selectedItemCount: Int, itemColor: ItemColor) {
+//        if (selectedItemCount > 0) { // Selected item
+//            if (!isActionModeStarted) {
+//                actionMode = startSupportActionMode( object : ActionMode.Callback {
+//                    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+//                        isActionModeStarted = true
+//                        menu?.clear()
+//                        mode?.menuInflater?.inflate(R.menu.action_mode, menu)
+//                        return true
+//                    }
+//
+//                    override fun onActionItemClicked(mode: ActionMode?, menuItem: MenuItem?): Boolean {
+//                        val pos = ItemColor.values().indexOf(itemColor)
+//                        val fragment = pagerAdapter.instantiateItem(view_pager, pos) as ListFragment
+//                        when (menuItem?.itemId) {
+//                            R.id.done ->   fragment.dismissSelectedItems { it.status = ToDoStatus.DONE }
+//                            R.id.failed -> fragment.dismissSelectedItems { it.status = ToDoStatus.FAILED }
+//                            R.id.delete -> fragment.dismissSelectedItems { it.removeFromRealm() }
+//                        }
+//                        mode?.finish()
+//                        return true
+//                    }
+//
+//                    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+//                        mode?.title = "$selectedItemCount Selected"
+//                        return true
+//                    }
+//
+//                    override fun onDestroyActionMode(mode: ActionMode?) {
+//                        val pos = ItemColor.values().indexOf(itemColor)
+//                        (pagerAdapter.instantiateItem(view_pager, pos) as ListFragment).todoAdapter.clearSelections()
+//                        isActionModeStarted = false
+//                    }
+//                })
+//            } else { // ActionMode already started
+//                actionMode?.title = "$selectedItemCount Selected"
+//            }
+//        } else { // Not selected
+//            actionMode?.finish()
+//        }
+//    }
 
     open class IntentBuilder(val context: Context) {
         val intent = Intent(context, MainActivity::class.java)

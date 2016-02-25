@@ -12,10 +12,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.squareup.otto.Subscribe
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.SnackbarCallback
 import com.tunesworks.vodolin.VoDolin
 import com.tunesworks.vodolin.activity.DetailActivity
+import com.tunesworks.vodolin.event.ItemSelectionChangeEvent
+import com.tunesworks.vodolin.event.ToDoEvent
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.model.status
 import com.tunesworks.vodolin.recyclerView.SwipeCallback
@@ -40,45 +43,24 @@ class ListFragment: BaseFragment() {
                 putString(KEY_ITEM_COLOR_NAME, itemColor.toString())
             }
 
-            return ListFragment().apply {
-                arguments = args
-            }
+            return ListFragment().apply { arguments = args }
         }
     }
 
-    // Observer for update realmResults
-    val observer = Observer { observable, data ->
-        val itemColoName = arguments.getString(KEY_ITEM_COLOR_NAME)
-        if (data is ChangeToDoEvent && data.itemColorName == itemColoName) {
-            Log.d(this@ListFragment.javaClass.name, "Update: $itemColoName")
-            todoAdapter.notifyDataSetChanged()
-        }
-    }
-    // Event class
-    data class ChangeToDoEvent(val itemColorName: String)
-
-    // Listener
-    interface OnItemSelectionChangeListener {
-        open fun onItemSelectionChanged(selectedItemCount: Int, itemColor :ItemColor) {}
+    // Subscriber
+    @Subscribe fun changeAllToDo(event: ToDoEvent.ChangeAll) {
+        if (event.itemColorname == itemColor.toString()) todoAdapter.notifyDataSetChanged()
     }
 
     var realm:        Realm by Delegates.notNull<Realm>()
     var realmResults: RealmResults<ToDo> by Delegates.notNull<RealmResults<ToDo>>()
     var todoAdapter:  ToDoAdapter by Delegates.notNull<ToDoAdapter>()
     val handler = Handler()
-    var onItemSelectionChangeListener: OnItemSelectionChangeListener? = null
     var itemColor: ItemColor by Delegates.notNull<ItemColor>()
 
-    override fun onAttach(context: Context?) {
-        // Set listener
-        if (context is OnItemSelectionChangeListener) onItemSelectionChangeListener = context
-
-        super.onAttach(context)
-    }
-
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // Add observer
-        VoDolin.observers.addObserver(observer)
+        // Register EventBus
+        VoDolin.bus.register(this)
 
         return inflater?.inflate(R.layout.fragment_list, container, false)
     }
@@ -100,13 +82,13 @@ class ListFragment: BaseFragment() {
         todoAdapter = ToDoAdapter(activity, realmResults, object : ToDoAdapter.ViewHolder.ItemListener {
             override fun onItemSelect(holder: ToDoAdapter.ViewHolder, position: Int) {
                 todoAdapter.toggleSelection(position)
-                onItemSelectionChangeListener?.onItemSelectionChanged(todoAdapter.getSelectedItemCount(), itemColor)
+                VoDolin.bus.post(ItemSelectionChangeEvent(todoAdapter.getSelectedItemCount(), itemColor))
             }
 
             override fun onItemClick(holder: ToDoAdapter.ViewHolder, position: Int) {
                 if (todoAdapter.getSelectedItemCount() > 0) { // Selected some item
                     todoAdapter.toggleSelection(position)
-                    onItemSelectionChangeListener?.onItemSelectionChanged(todoAdapter.getSelectedItemCount(), itemColor)
+                    VoDolin.bus.post(ItemSelectionChangeEvent(todoAdapter.getSelectedItemCount(), itemColor))
                 } else { // Not selected
                     // Start DetailActivity
                     DetailActivity.IntentBuilder
@@ -180,12 +162,15 @@ class ListFragment: BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        VoDolin.observers.deleteObserver(observer)
+
+        // Unregister EventBus
+        VoDolin.bus.unregister(this)
+
+        // Close Realm instance
         realm.close()
     }
 
     fun dismissSelectedItems(func: (ToDo) -> Unit) {
-        val selectedItemCount = todoAdapter.getSelectedItemCount()
         val selectedItems     = todoAdapter.getSelectedItems()
 
         baseActivity.makeSnackbar("Marked as Done")?.apply {
