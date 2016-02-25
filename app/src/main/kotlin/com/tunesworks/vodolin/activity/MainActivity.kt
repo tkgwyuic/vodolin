@@ -233,8 +233,9 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
     }
 
     fun finishInputMode() {
-        // Change focus from edit text
-        coordinator.requestFocus()
+        // Clear focus
+        //coordinator.requestFocus()
+        footer_edit.clearFocus()
 
         // Hide keyboard
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
@@ -258,15 +259,9 @@ class MainActivity : BaseActivity(), ListFragment.OnItemSelectionChangeListener 
                         val pos = ItemColor.values().indexOf(itemColor)
                         val fragment = pagerAdapter.instantiateItem(view_pager, pos) as ListFragment
                         when (menuItem?.itemId) {
-                            R.id.done -> {
-                                fragment.dismissSelectedItems { it.status = ToDoStatus.DONE }
-                            }
-                            R.id.failed -> {
-                                fragment.dismissSelectedItems { it.status = ToDoStatus.FAILED }
-                            }
-                            R.id.delete -> {
-                                fragment.dismissSelectedItems { it.removeFromRealm() }
-                            }
+                            R.id.done ->   fragment.dismissSelectedItems { it.status = ToDoStatus.DONE }
+                            R.id.failed -> fragment.dismissSelectedItems { it.status = ToDoStatus.FAILED }
+                            R.id.delete -> fragment.dismissSelectedItems { it.removeFromRealm() }
                         }
                         mode?.finish()
                         return true

@@ -5,11 +5,17 @@ import android.content.Intent
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import kotlinx.android.synthetic.*
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper
 
 abstract class BaseActivity : AppCompatActivity() {
     override fun attachBaseContext(newBase: Context?) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase))
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        clearFindViewByIdCache()
     }
 
     open fun getSnackbarContainer(): CoordinatorLayout? = null
