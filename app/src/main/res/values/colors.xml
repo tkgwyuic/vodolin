@@ -14,6 +14,8 @@
 
     <color name="list_item">#FAFAFA</color>
     <color name="list_item_selected">#E0E0E0</color>
+    <color name="list_item_done">#E8F5E9</color>
+    <color name="list_item_failed">#FFF8E1</color>
     <color name="done">#4CAF50</color>
     <color name="failed">#FFC107</color>
     <color name="edit">#2196F3</color>

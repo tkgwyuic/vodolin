@@ -9,7 +9,7 @@ import java.util.*
 
 abstract class RealmRecyclerViewAdapter<T: RealmObject, VH: RecyclerView.ViewHolder>(
         val context: Context,
-        val realmResults: RealmResults<T>
+        var realmResults: RealmResults<T>
 ): RecyclerView.Adapter<VH>() {
     val selectedItemPositions = ArrayList<Int>()
 

@@ -17,6 +17,8 @@ import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.model.ionicons
 import com.tunesworks.vodolin.model.itemColor
+import com.tunesworks.vodolin.model.status
+import com.tunesworks.vodolin.value.ToDoStatus
 import io.realm.RealmResults
 
 class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: ViewHolder.ItemListener): RealmRecyclerViewAdapter<ToDo, ToDoAdapter.ViewHolder>(context, results) {
@@ -54,7 +56,13 @@ class ToDoAdapter(context: Context, results: RealmResults<ToDo>, val listener: V
             // Set foreground color and item label icon
             when (viewType) {
                 VIEW_TYPE_DEFAULT  -> {
-                    itemForeground.setBackgroundResource(R.color.list_item)
+                    var colorResId: Int
+                    when (todo.status) {
+                        ToDoStatus.DONE -> colorResId = R.color.list_item_done
+                        ToDoStatus.FAILED -> colorResId = R.color.list_item_failed
+                        else -> colorResId = R.color.list_item
+                    }
+                    itemForeground.setBackgroundResource(colorResId)
                     itemLabel.text = todo.ionicons.icon
                 }
                 VIEW_TYPE_SELECTED -> {

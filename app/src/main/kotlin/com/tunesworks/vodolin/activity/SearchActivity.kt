@@ -7,10 +7,12 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.SearchView
+import android.util.Log
 import android.view.Menu
 import com.tunesworks.vodolin.R
 import com.tunesworks.vodolin.model.ToDo
 import com.tunesworks.vodolin.recyclerView.ToDoAdapter
+import io.realm.Case
 import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.Sort
@@ -44,6 +46,12 @@ class SearchActivity: BaseActivity() {
             }
 
             override fun onQueryTextChange(s: String?): Boolean {
+                if (s == null) return false
+                Log.d(this@SearchActivity.javaClass.name, s)
+                realmResults = realm.where(ToDo::class.java).contains(ToDo::content.name, s)
+                        .findAllSorted(ToDo::createdAt.name, Sort.DESCENDING)
+                todoAdapter.realmResults = realmResults
+                todoAdapter.notifyDataSetChanged()
                 return true
             }
         })
