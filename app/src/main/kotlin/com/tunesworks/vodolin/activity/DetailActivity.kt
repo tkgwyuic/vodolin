@@ -65,18 +65,94 @@ class DetailActivity: BaseActivity(),
         todo = realm.where(ToDo::class.java)
                 .equalTo(ToDo::uuid.name, intent.getStringExtra(KEY_UUID) ?: "")
                 .findFirst() ?: return finishWithToast("Error: ToDo not found")
+        oldTodo = realm.copyFromRealm(todo)
 
         // Save item color name
         prevItemColorName = todo.itemColorName
         prevDeadline = todo.deadline
 
         // Set Toolbar
-        setSupportActionBar(toolbar)
-        supportActionBar?.apply {
+        toolbar.apply {
             title = ""
-            setDisplayHomeAsUpEnabled(true)
-            setHomeAsUpIndicator(R.drawable.ic_close_black_24dp)
-            setHomeButtonEnabled(true)
+            setNavigationIcon(R.drawable.ic_close_black_24dp)
+            setNavigationOnClickListener { onBackPressed() }
+            inflateMenu(R.menu.menu_detail)
+            setOnMenuItemClickListener {
+                when (it.itemId) {
+                // Save changes
+                    R.id.done -> {
+                        if (realm.isInTransaction) {
+                            // Set values
+                            todo.updatedAt = Date()
+                            todo.content   = content.text.toString()
+                            todo.memo      = memo.text.toString()
+
+                            // Alarm
+                            val bid = todo.createdAt.time.toInt()
+                            if (switch_notify.isChecked && todo.deadline != prevDeadline) {
+                                if (todo.isNotify) cancelAlarm(bid)
+                                setAlarm(bid)
+                            } else cancelAlarm(bid)
+
+                            todo.isNotify = switch_notify.isChecked
+
+                            // Commit
+                            realm.commitTransaction()
+
+                            // Publishing
+                            VoDolin.bus.apply {
+                                //post(ToDoEvent.ChangeAll(todo.itemColorName))
+                                post(ToDoEvent.Update(todo))
+                                if (todo.itemColorName != prevItemColorName) { // If color changed
+                                    //post(ToDoEvent.ChangeAll(prevItemColorName))
+                                    post(ToDoEvent.Move(todo, prevItemColorName))
+                                    post(RequestTabScrollEvent(todo.itemColorName))
+                                }
+
+                                if (todo.itemColorName == prevItemColorName) {
+                                    post(ToDoEvent.Update(todo))
+                                } else {
+
+                                }
+                            }
+
+
+
+                            finishWithToast("Modified")
+                        } else finishWithToast("Error! Not modified") // Realm is not in transaction
+                    }
+
+                // Delete
+                    R.id.delete -> {
+                        // Show confirm dialog
+                        AlertDialog.Builder(this@DetailActivity)
+                                .setTitle("Warning")
+                                .setMessage("Delete the this ToDo?")
+                                .setPositiveButton("YES", { dialog, witch ->
+                                    if (realm.isInTransaction) {
+                                        // Save color name
+                                        var itemColorName = todo.itemColorName
+
+                                        // Remove & Commit
+                                        todo.removeFromRealm()
+                                        realm.commitTransaction()
+
+                                        // Notify
+                                        //                                VoDolin.observers.apply {
+                                        //                                    notifyObservers(ListFragment.ChangeToDoEvent(itemColorName))
+                                        //                                }
+                                        VoDolin.bus.post(ToDoEvent.ChangeAll(itemColorName))
+
+                                        finishWithToast("Deleted.")
+                                    } else finishWithToast("Error! Not deleted") // Realm is not in transaction
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                    }
+                }
+
+                true
+            }
         }
 
         // Set StatusBar color
@@ -158,91 +234,6 @@ class DetailActivity: BaseActivity(),
         // Close Realm
         if (realm.isInTransaction) realm.cancelTransaction()
         if (!realm.isClosed) realm.close()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_detail, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
-            // Discard changes
-            android.R.id.home -> onBackPressed()
-
-            // Save changes
-            R.id.done -> {
-                if (realm.isInTransaction) {
-                    // Set values
-                    todo.updatedAt = Date()
-                    todo.content   = content.text.toString()
-                    todo.memo      = memo.text.toString()
-
-                    // Alarm
-                    val bid = todo.createdAt.time.toInt()
-                    if (switch_notify.isChecked && todo.deadline != prevDeadline) {
-                        if (todo.isNotify) cancelAlarm(bid)
-                        setAlarm(bid)
-                    } else cancelAlarm(bid)
-
-                    todo.isNotify = switch_notify.isChecked
-
-                    // Commit
-                    realm.commitTransaction()
-
-                    // Publishing
-                    VoDolin.bus.apply {
-                        //post(ToDoEvent.ChangeAll(todo.itemColorName))
-                        post(ToDoEvent.Update(todo))
-                        if (todo.itemColorName != prevItemColorName) { // If color changed
-                            //post(ToDoEvent.ChangeAll(prevItemColorName))
-                            post(ToDoEvent.Move(todo, prevItemColorName))
-                            post(RequestTabScrollEvent(todo.itemColorName))
-                        }
-
-                        if (todo.itemColorName == prevItemColorName) {
-                            post(ToDoEvent.Update(todo))
-                        } else {
-
-                        }
-                    }
-
-
-
-                    finishWithToast("Modified")
-                } else finishWithToast("Error! Not modified") // Realm is not in transaction
-            }
-
-            // Delete
-            R.id.delete -> {
-                // Show confirm dialog
-                AlertDialog.Builder(this)
-                        .setTitle("Warning")
-                        .setMessage("Delete the this ToDo?")
-                        .setPositiveButton("YES", { dialog, witch ->
-                            if (realm.isInTransaction) {
-                                // Save color name
-                                var itemColorName = todo.itemColorName
-
-                                // Remove & Commit
-                                todo.removeFromRealm()
-                                realm.commitTransaction()
-
-                                // Notify
-//                                VoDolin.observers.apply {
-//                                    notifyObservers(ListFragment.ChangeToDoEvent(itemColorName))
-//                                }
-                                VoDolin.bus.post(ToDoEvent.ChangeAll(itemColorName))
-
-                                finishWithToast("Deleted.")
-                            } else finishWithToast("Error! Not deleted") // Realm is not in transaction
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show()
-            }
-            else -> return false
-        }
-        return true
     }
 
     override fun onBackPressed() {

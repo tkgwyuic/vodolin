@@ -77,6 +77,7 @@ class MainActivity : BaseActivity() {
                 true
             }
         }
+        setSupportActionBar(toolbar)
 
         // Set AppBar background color
         appbar.setBackgroundColor(ItemColor.values()[0].color)
