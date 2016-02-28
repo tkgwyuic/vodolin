@@ -29,14 +29,22 @@ class VoDolin: Application() {
             ToDo(content = "会議の資料作成", itemColorName = ItemColor.BLUE.toString(), ioniconsName = Ionicons.BRIEFCASE.toString()),
 
             ToDo(content = "録画したプ○キュアを見る", itemColorName = ItemColor.PURPLE.toString(), ioniconsName = Ionicons.HEART.toString()),
-            ToDo(content = "録画したガン○ムを見る", itemColorName = ItemColor.PURPLE.toString(), ioniconsName = Ionicons.BUG.toString()),
-            ToDo(content = "一日分の野菜を買う",      itemColorName = ItemColor.PURPLE.toString(), ioniconsName = Ionicons.WINEGLASS.toString()),
+            ToDo(content = "発表の資料を作る", itemColorName = ItemColor.PURPLE.toString(), ioniconsName = Ionicons.DOCUMENT.toString()),
+            ToDo(content = "一日分の野菜を飲む",      itemColorName = ItemColor.PURPLE.toString(), ioniconsName = Ionicons.WINEGLASS.toString()),
 
             ToDo(content = "目標をセンターに入れてスイッチ", itemColorName = ItemColor.RED.toString(), ioniconsName = Ionicons.ALERT.toString()),
             ToDo(content = "ガ○ダムによる武力介入", itemColorName = ItemColor.RED.toString(), ioniconsName = Ionicons.FORK.toString()),
             ToDo(content = "海賊王になる", itemColorName = ItemColor.RED.toString(), ioniconsName = Ionicons.PERSON.toString()),
             ToDo(content = "毒も喰らう栄養も喰らう", itemColorName = ItemColor.RED.toString(), ioniconsName = Ionicons.PERSON.toString(),
-                    memo = "両方を共に美味いと感じ―――― 血肉に変える度量こそが食には肝要だ")
+                    memo = "両方を共に美味いと感じ―――― 血肉に変える度量こそが食には肝要だ"),
+
+            ToDo(content = "スライドの作成", itemColorName = ItemColor.ORANGE.toString(), ioniconsName = Ionicons.SOCIAL_APPLE.toString()),
+            ToDo(content = "仕様書の作成", itemColorName = ItemColor.ORANGE.toString(), ioniconsName = Ionicons.DOCUMENT.toString()),
+
+            ToDo(content = "テストコード作成", itemColorName = ItemColor.GREEN.toString(), ioniconsName = Ionicons.BUG.toString()),
+            ToDo(content = "CIツール導入", itemColorName = ItemColor.GREEN.toString(), ioniconsName = Ionicons.BUG.toString()),
+            ToDo(content = "DIコンテナ導入", itemColorName = ItemColor.GREEN.toString(), ioniconsName = Ionicons.BUG.toString()),
+            ToDo(content = "ProGuardによる難読化", itemColorName = ItemColor.GREEN.toString(), ioniconsName = Ionicons.BUG.toString())
     )
 
     override fun onCreate() {
