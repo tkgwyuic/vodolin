@@ -54,13 +54,19 @@ class ListFragment: BaseFragment() {
     }
     @Subscribe fun updateToDo(event: ToDoEvent.Update) {
         if (event.todo.itemColor == itemColor) {
+            todoAdapter.notifyDataSetChanged()
+        }
+    }
+    @Subscribe fun moveToDo(event: ToDoEvent.Change) {
+        if (event.newTodo.itemColor == itemColor) {
             realmResults.forEachIndexed { i, todo ->
-                if (todo.uuid == event.todo.uuid) {
-                    todoAdapter.notifyItemChanged(i)
+                if (todo.uuid == event.newTodo.uuid) {
+                    todoAdapter.notifyItemInserted(i)
                     return
                 }
             }
-
+        }
+        if (event.oldTodo.itemColor == itemColor) {
             todoAdapter.notifyDataSetChanged()
         }
     }

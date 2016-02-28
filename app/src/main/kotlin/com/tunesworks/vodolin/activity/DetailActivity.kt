@@ -105,7 +105,7 @@ class DetailActivity: BaseActivity(),
                                 post(ToDoEvent.Update(todo))
                                 if (todo.itemColorName != prevItemColorName) { // If color changed
                                     //post(ToDoEvent.ChangeAll(prevItemColorName))
-                                    post(ToDoEvent.Move(todo, prevItemColorName))
+                                    post(ToDoEvent.Change(todo, oldTodo))
                                     post(RequestTabScrollEvent(todo.itemColorName))
                                 }
 
